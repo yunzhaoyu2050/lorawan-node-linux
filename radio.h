@@ -27,17 +27,19 @@
 
 #include <stdint.h>
 #include <stdbool.h>
-
+#include "gpio.h"
+#include "sx126x-board.h"
 /*!
  * Begins critical section
  */
-#define LORA_RADIO_CRITICAL_SECTION_BEGIN( )  register rt_base_t level; level = rt_hw_interrupt_disable()
+#define LORA_RADIO_CRITICAL_SECTION_BEGIN( )  gpio_unexport(LORA_RADIO_DIO1_PIN)//register rt_base_t level; level = rt_hw_interrupt_disable()
 
 /*!
  * Ends critical section
  */
-#define LORA_RADIO_CRITICAL_SECTION_END( ) rt_hw_interrupt_enable(level)
-
+#define LORA_RADIO_CRITICAL_SECTION_END( ) gpio_export(LORA_RADIO_DIO1_PIN); \
+    gpio_set_dir(LORA_RADIO_DIO1_PIN, 0); \
+    gpio_set_edge(LORA_RADIO_DIO1_PIN, "rising");
 /*!
  * Radio driver supported modems
  */

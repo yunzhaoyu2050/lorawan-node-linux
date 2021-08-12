@@ -75,7 +75,7 @@ extern "C"
 #include <stdbool.h>
 
 #include "timer.h"
-#include "systime.h"
+// #include "systime.h"
 #include "LoRaMacTypes.h"
 
 #include "RegionNvm.h"
@@ -84,6 +84,7 @@ extern "C"
 #include "LoRaMacClassBNvm.h"
 
 #include <time.h>
+#include "lora-radio-timer.h"
 
 /*!
  * Maximum number of times the MAC layer tries to get an acknowledge.

@@ -250,10 +250,10 @@ static void LmhpClockSyncOnMcpsIndication( McpsIndication_t *mcpsIndication )
                 timeCorrection += ( mcpsIndication->Buffer[cmdIndex++] << 24 ) & 0xFF000000;
                 if( ( mcpsIndication->Buffer[cmdIndex++] & 0x0F ) == LmhpClockSyncState.TimeReqParam.Fields.TokenReq )
                 {
-                    SysTime_t curTime = { .Seconds = 0, .SubSeconds = 0 };
-                    curTime = SysTimeGet( );
-                    curTime.Seconds += timeCorrection;
-                    SysTimeSet( curTime );
+                    SysTime_t curTime = { .tv_sec = 0, .tv_nsec = 0 };
+                    clock_gettime(CLOCK_MONOTONIC, &curTime); //curTime = SysTimeGet( );
+                    curTime.tv_sec += timeCorrection;
+                    // SysTimeSet( curTime ); // ??? TODO:
                     LmhpClockSyncState.TimeReqParam.Fields.TokenReq = ( LmhpClockSyncState.TimeReqParam.Fields.TokenReq + 1 ) & 0x0F;
                     if( LmhpClockSyncPackage.OnSysTimeUpdate != NULL )
                     {
@@ -280,13 +280,15 @@ static void LmhpClockSyncOnMcpsIndication( McpsIndication_t *mcpsIndication )
                 // Answer status not supported.
                 LmhpClockSyncState.DataBuffer[dataBufferIndex++] = 0x01;
 
-                SysTime_t curTime = SysTimeGet( );
+                SysTime_t curTime = {0};//SysTimeGet( );
+                clock_gettime(CLOCK_MONOTONIC, &curTime);
+
                 // Substract Unix to Gps epcoh offset. The system time is based on Unix time.
-                curTime.Seconds -= UNIX_GPS_EPOCH_OFFSET;
-                LmhpClockSyncState.DataBuffer[dataBufferIndex++] = ( curTime.Seconds >> 0  ) & 0xFF;
-                LmhpClockSyncState.DataBuffer[dataBufferIndex++] = ( curTime.Seconds >> 8  ) & 0xFF;
-                LmhpClockSyncState.DataBuffer[dataBufferIndex++] = ( curTime.Seconds >> 16 ) & 0xFF;
-                LmhpClockSyncState.DataBuffer[dataBufferIndex++] = ( curTime.Seconds >> 24 ) & 0xFF;
+                curTime.tv_sec -= UNIX_GPS_EPOCH_OFFSET;
+                LmhpClockSyncState.DataBuffer[dataBufferIndex++] = ( curTime.tv_sec >> 0  ) & 0xFF;
+                LmhpClockSyncState.DataBuffer[dataBufferIndex++] = ( curTime.tv_sec >> 8  ) & 0xFF;
+                LmhpClockSyncState.DataBuffer[dataBufferIndex++] = ( curTime.tv_sec >> 16 ) & 0xFF;
+                LmhpClockSyncState.DataBuffer[dataBufferIndex++] = ( curTime.tv_sec >> 24 ) & 0xFF;
                 break;
             }
             case CLOCK_SYNC_FORCE_RESYNC_REQ:
@@ -347,17 +349,18 @@ LmHandlerErrorStatus_t LmhpClockSyncAppTimeReq( void )
         LmhpClockSyncPackage.OnDeviceTimeRequest( );
     }
 
-    SysTime_t curTime = SysTimeGet( );
+    SysTime_t curTime = {0};//SysTimeGet( );
+    clock_gettime(CLOCK_MONOTONIC, &curTime);
     uint8_t dataBufferIndex = 0;
 
     // Substract Unix to Gps epcoh offset. The system time is based on Unix time.
-    curTime.Seconds -= UNIX_GPS_EPOCH_OFFSET;
+    curTime.tv_sec -= UNIX_GPS_EPOCH_OFFSET;
 
     LmhpClockSyncState.DataBuffer[dataBufferIndex++] = CLOCK_SYNC_APP_TIME_REQ;
-    LmhpClockSyncState.DataBuffer[dataBufferIndex++] = ( curTime.Seconds >> 0  ) & 0xFF;
-    LmhpClockSyncState.DataBuffer[dataBufferIndex++] = ( curTime.Seconds >> 8  ) & 0xFF;
-    LmhpClockSyncState.DataBuffer[dataBufferIndex++] = ( curTime.Seconds >> 16 ) & 0xFF;
-    LmhpClockSyncState.DataBuffer[dataBufferIndex++] = ( curTime.Seconds >> 24 ) & 0xFF;
+    LmhpClockSyncState.DataBuffer[dataBufferIndex++] = ( curTime.tv_sec >> 0  ) & 0xFF;
+    LmhpClockSyncState.DataBuffer[dataBufferIndex++] = ( curTime.tv_sec >> 8  ) & 0xFF;
+    LmhpClockSyncState.DataBuffer[dataBufferIndex++] = ( curTime.tv_sec >> 16 ) & 0xFF;
+    LmhpClockSyncState.DataBuffer[dataBufferIndex++] = ( curTime.tv_sec >> 24 ) & 0xFF;
     LmhpClockSyncState.TimeReqParam.Fields.AnsRequired = 0;
     LmhpClockSyncState.DataBuffer[dataBufferIndex++] = LmhpClockSyncState.TimeReqParam.Value;
 

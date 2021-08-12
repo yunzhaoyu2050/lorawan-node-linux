@@ -11,4 +11,4 @@ int gpio_getfd_value(int fd);
 int gpio_set_edge(unsigned int gpio, char *edge);
 int gpio_fd_open(unsigned int gpio);
 int gpio_fd_close(int fd);
-#endif  // __GPIO_H__
+#endif // __GPIO_H__

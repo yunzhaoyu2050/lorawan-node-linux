@@ -838,16 +838,16 @@ static void ProcessRadioTxDone( void )
         Radio.Sleep( );
     }
     // Setup timers
-    TimerSetValue( &MacCtx.RxWindowTimer1, MacCtx.RxWindow1Delay );
+    TimerSetValue( &MacCtx.RxWindowTimer1, 0, MacCtx.RxWindow1Delay );
     TimerStart( &MacCtx.RxWindowTimer1 );
-    TimerSetValue( &MacCtx.RxWindowTimer2, MacCtx.RxWindow2Delay );
+    TimerSetValue( &MacCtx.RxWindowTimer2, 0, MacCtx.RxWindow2Delay );
     TimerStart( &MacCtx.RxWindowTimer2 );
 
     if( MacCtx.NodeAckRequested == true )
     {
         getPhy.Attribute = PHY_RETRANSMIT_TIMEOUT;
         phyParam = RegionGetPhyParam( Nvm.MacGroup2.Region, &getPhy );
-        TimerSetValue( &MacCtx.RetransmitTimeoutTimer, MacCtx.RxWindow2Delay + phyParam.Value );
+        TimerSetValue( &MacCtx.RetransmitTimeoutTimer, 0, MacCtx.RxWindow2Delay + phyParam.Value );
         TimerStart( &MacCtx.RetransmitTimeoutTimer );
     }
     else
@@ -2448,7 +2448,7 @@ static void ProcessMacCommands( uint8_t *payload, uint8_t macIndex, uint8_t comm
 
                 uint32_t forceRejoinReqCycleTime = 0;
                 ConvertRejoinCycleTime( rejoinCycleInSec, &forceRejoinReqCycleTime );
-                TimerSetValue( &MacCtx.ForceRejoinReqCycleTimer, forceRejoinReqCycleTime );
+                // TimerSetValue( &MacCtx.ForceRejoinReqCycleTimer, forceRejoinReqCycleTime );
 
                 if( ( Nvm.MacGroup2.ForceRejoinType == 0 ) || ( Nvm.MacGroup2.ForceRejoinType == 1 ) )
                 {
@@ -2458,6 +2458,7 @@ static void ProcessMacCommands( uint8_t *payload, uint8_t macIndex, uint8_t comm
                 {
                     SendReJoinReq( REJOIN_REQ_2 );
                 }
+                TimerSetValue( &MacCtx.ForceRejoinReqCycleTimer, 0, forceRejoinReqCycleTime );
                 TimerStart( &MacCtx.ForceRejoinReqCycleTimer );
                 break;
             }
@@ -2484,7 +2485,7 @@ static void ProcessMacCommands( uint8_t *payload, uint8_t macIndex, uint8_t comm
                 {
                     timeOK = 0x01;
                     TimerStop( &MacCtx.Rejoin0CycleTimer );
-                    TimerSetValue( &MacCtx.Rejoin0CycleTimer, MacCtx.Rejoin0CycleTime );
+                    TimerSetValue( &MacCtx.Rejoin0CycleTimer, 0, MacCtx.Rejoin0CycleTime );
                     TimerStart( &MacCtx.Rejoin0CycleTimer );
                 }
                 macCmdPayload[0] = timeOK;
@@ -2955,7 +2956,7 @@ static LoRaMacStatus_t ScheduleTx( bool allowDelayedTx )
             if( MacCtx.DutyCycleWaitTime != 0 )
             {// Send later - prepare timer
                 MacCtx.MacState |= LORAMAC_TX_DELAYED;
-                TimerSetValue( &MacCtx.TxDelayedTimer, MacCtx.DutyCycleWaitTime );
+                TimerSetValue( &MacCtx.TxDelayedTimer, 0, MacCtx.DutyCycleWaitTime );
                 TimerStart( &MacCtx.TxDelayedTimer );
             }
             return LORAMAC_STATUS_OK;
@@ -4789,7 +4790,7 @@ LoRaMacStatus_t LoRaMacMibSetRequestConfirm( MibRequestConfirm_t* mibSet )
         {
             if( ConvertRejoinCycleTime( Nvm.MacGroup2.Rejoin0CycleInSec, &MacCtx.Rejoin0CycleTime ) == true )
             {
-                TimerSetValue( &MacCtx.Rejoin0CycleTimer, MacCtx.Rejoin0CycleTime );
+                TimerSetValue( &MacCtx.Rejoin0CycleTimer, 0, MacCtx.Rejoin0CycleTime );
                 TimerStart( &MacCtx.Rejoin0CycleTimer );
             }
             else
@@ -4802,7 +4803,7 @@ LoRaMacStatus_t LoRaMacMibSetRequestConfirm( MibRequestConfirm_t* mibSet )
         {
            if( ConvertRejoinCycleTime( Nvm.MacGroup2.Rejoin1CycleInSec, &MacCtx.Rejoin1CycleTime ) == true )
             {
-                TimerSetValue( &MacCtx.Rejoin1CycleTimer, MacCtx.Rejoin1CycleTime );
+                TimerSetValue( &MacCtx.Rejoin1CycleTimer, 0, MacCtx.Rejoin1CycleTime );
                 TimerStart( &MacCtx.Rejoin1CycleTimer );
             }
             else
@@ -5360,7 +5361,7 @@ static void OnRejoin0CycleTimerEvent( void* context )
 
     SendReJoinReq( REJOIN_REQ_0 );
 
-    TimerSetValue( &MacCtx.Rejoin0CycleTimer, MacCtx.Rejoin0CycleTime );
+    TimerSetValue( &MacCtx.Rejoin0CycleTimer, 0, MacCtx.Rejoin0CycleTime );
     TimerStart( &MacCtx.Rejoin0CycleTimer );
 }
 
@@ -5371,7 +5372,7 @@ static void OnRejoin1CycleTimerEvent( void* context )
 
     SendReJoinReq( REJOIN_REQ_1 );
 
-    TimerSetValue( &MacCtx.Rejoin1CycleTimer, MacCtx.Rejoin1CycleTime );
+    TimerSetValue( &MacCtx.Rejoin1CycleTimer, 0, MacCtx.Rejoin1CycleTime );
     TimerStart( &MacCtx.Rejoin1CycleTimer );
 }
 
@@ -5382,7 +5383,7 @@ static void OnRejoin2CycleTimerEvent( void* context )
 
     SendReJoinReq( REJOIN_REQ_2 );
 
-    TimerSetValue( &MacCtx.Rejoin2CycleTimer, MacCtx.Rejoin2CycleTime );
+    TimerSetValue( &MacCtx.Rejoin2CycleTimer, 0, MacCtx.Rejoin2CycleTime );
     TimerStart( &MacCtx.Rejoin2CycleTimer );
 }
 

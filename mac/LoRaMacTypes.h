@@ -43,7 +43,8 @@ extern "C"
 #include <stdint.h>
 #include <stdbool.h>
 #include "timer.h"
-#include "systime.h"
+// #include "systime.h"
+#include "lora-radio-timer.h"
 
 /*!
  * Start value for unicast keys enumeration

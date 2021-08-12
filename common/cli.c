@@ -22,35 +22,35 @@
 #include "NvmDataMgmt.h"
 #include "cli.h"
 
-void CliProcess( Uart_t* uart )
-{
-    uint8_t data = 0;
+// void CliProcess( Uart_t* uart )
+// {
+//     uint8_t data = 0;
 
-    if( UartGetChar( uart, &data ) == 0 )
-    {
-        if( data == '\x1B' )
-        { // Escape character has been received
-            printf( "ESC + " );
-            while( UartGetChar( uart, &data ) != 0 )
-            {
-            }
-            printf( "%c\n", data );
-            if( data == 'N' )
-            { // N character has been received
-                data = 0;
-                // Reset NVM
-                if( NvmDataMgmtFactoryReset( ) == true )
-                {
-                    printf( "\n\nNVM factory reset succeed\n" );
-                }
-                else
-                {
-                    printf( "\n\nNVM factory reset failed\n" );
-                }
+//     if( UartGetChar( uart, &data ) == 0 )
+//     {
+//         if( data == '\x1B' )
+//         { // Escape character has been received
+//             printf( "ESC + " );
+//             while( UartGetChar( uart, &data ) != 0 )
+//             {
+//             }
+//             printf( "%c\n", data );
+//             if( data == 'N' )
+//             { // N character has been received
+//                 data = 0;
+//                 // Reset NVM
+//                 if( NvmDataMgmtFactoryReset( ) == true )
+//                 {
+//                     printf( "\n\nNVM factory reset succeed\n" );
+//                 }
+//                 else
+//                 {
+//                     printf( "\n\nNVM factory reset failed\n" );
+//                 }
                 
-                printf( "\n\nPLEASE RESET THE END-DEVICE\n\n" );
-                while( 1 );
-            }
-        }
-    }
-}
+//                 printf( "\n\nPLEASE RESET THE END-DEVICE\n\n" );
+//                 while( 1 );
+//             }
+//         }
+//     }
+// }

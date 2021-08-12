@@ -23,7 +23,7 @@
  extern "C" {
 #endif
 
-#include "uart.h"
+// #include "uart.h"
 
 /*!
  * Process characters received on the serial interface
@@ -32,7 +32,7 @@
  *
  * \param [IN] uart UART interface object used by the command line interface
  */
-void CliProcess( Uart_t* uart );
+// void CliProcess( Uart_t* uart );
 
 #ifdef __cplusplus
 }

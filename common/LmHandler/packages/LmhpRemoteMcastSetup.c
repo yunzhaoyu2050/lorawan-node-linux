@@ -21,7 +21,7 @@
  */
 #include "LmHandler.h"
 #include "LmhpRemoteMcastSetup.h"
-
+#include "log.h"
 #define DBG_TRACE                                   1
 
 #if DBG_TRACE == 1
@@ -207,8 +207,8 @@ static void LmhpRemoteMcastSetupInit( void * params, uint8_t *dataBuffer, uint8_
         LmhpRemoteMcastSetupState.DataBuffer = dataBuffer;
         LmhpRemoteMcastSetupState.DataBufferMaxSize = dataBufferMaxSize;
         LmhpRemoteMcastSetupState.Initialized = true;
-        TimerInit( &SessionStartTimer, OnSessionStartTimer );
-        TimerInit( &SessionStopTimer, OnSessionStopTimer );
+        TimerInit( &SessionStartTimer, OnSessionStartTimer, NULL );
+        TimerInit( &SessionStopTimer, OnSessionStopTimer, NULL );
     }
     else
     {
@@ -242,7 +242,7 @@ static void LmhpRemoteMcastSetupProcess( void )
             // Switch to Class C
             LmHandlerRequestClass( CLASS_C );
 
-            TimerSetValue( &SessionStopTimer, ( 1 << McSessionData[0].SessionTimeout ) * 1000 );
+            TimerSetValue( &SessionStopTimer, 0, ( 1 << McSessionData[0].SessionTimeout ) * 1000 );
             TimerStart( &SessionStopTimer );
             break;
         case REMOTE_MCAST_SETUP_SESSION_STATE_STOP:
@@ -374,17 +374,17 @@ static void LmhpRemoteMcastSetupOnMcpsIndication( McpsIndication_t *mcpsIndicati
                 LmhpRemoteMcastSetupState.DataBuffer[dataBufferIndex++] = REMOTE_MCAST_SETUP_MC_GROUP_CLASS_C_SESSION_ANS;
                 if( LoRaMacMcChannelSetupRxParams( ( AddressIdentifier_t )id, &McSessionData[id].RxParams, &status ) == LORAMAC_STATUS_OK )
                 {
-                    SysTime_t curTime = { .Seconds = 0, .SubSeconds = 0 };
-                    curTime = SysTimeGet( );
+                    SysTime_t curTime = { .tv_sec = 0, .tv_nsec = 0 };
+                    clock_gettime(CLOCK_MONOTONIC, &curTime); // curTime = SysTimeGet( );
 
-                    int32_t timeToSessionStart = McSessionData[id].SessionTime - curTime.Seconds;
+                    int32_t timeToSessionStart = McSessionData[id].SessionTime - curTime.tv_sec;
                     if( timeToSessionStart > 0 )
                     {
                         // Start session start timer
-                        TimerSetValue( &SessionStartTimer, timeToSessionStart * 1000 );
+                        TimerSetValue( &SessionStartTimer, 0, timeToSessionStart * 1000 );
                         TimerStart( &SessionStartTimer );
 
-                        DBG( "Time2SessionStart: %ld ms\n", timeToSessionStart * 1000 );
+                        log(DEBUG, "Time2SessionStart: %ld ms\n", timeToSessionStart * 1000 );
 
                         LmhpRemoteMcastSetupState.DataBuffer[dataBufferIndex++] = status;
                         LmhpRemoteMcastSetupState.DataBuffer[dataBufferIndex++] = ( timeToSessionStart >> 0  ) & 0xFF;
@@ -424,20 +424,20 @@ static void LmhpRemoteMcastSetupOnMcpsIndication( McpsIndication_t *mcpsIndicati
         };
         LmHandlerSend( &appData, LORAMAC_HANDLER_UNCONFIRMED_MSG );
 
-        DBG( "ID          : %d\n", McSessionData[0].McGroupData.IdHeader.Fields.McGroupId );
-        DBG( "McAddr      : %08lX\n", McSessionData[0].McGroupData.McAddr );
-        DBG( "McKey       : %02X", McSessionData[0].McGroupData.McKeyEncrypted[0] );
+        log(DEBUG, "ID          : %d\n", McSessionData[0].McGroupData.IdHeader.Fields.McGroupId );
+        log(DEBUG, "McAddr      : %08lX\n", McSessionData[0].McGroupData.McAddr );
+        log(DEBUG, "McKey       : %02X", McSessionData[0].McGroupData.McKeyEncrypted[0] );
         for( int i = 1; i < 16; i++ )
         {
-            DBG( "-%02X",  McSessionData[0].McGroupData.McKeyEncrypted[i] );
+            log(DEBUG, "-%02X",  McSessionData[0].McGroupData.McKeyEncrypted[i] );
         }
-        DBG( "\n" );
-        DBG( "McFCountMin : %lu\n",  McSessionData[0].McGroupData.McFCountMin );
-        DBG( "McFCountMax : %lu\n",  McSessionData[0].McGroupData.McFCountMax );
-        DBG( "SessionTime : %lu\n",  McSessionData[0].SessionTime );
-        DBG( "SessionTimeT: %d\n",  McSessionData[0].SessionTimeout );
-        DBG( "Rx Freq     : %lu\n", McSessionData[0].RxParams.ClassC.Frequency );
-        DBG( "Rx DR       : DR_%d\n", McSessionData[0].RxParams.ClassC.Datarate );
+        log(DEBUG, "\n" );
+        log(DEBUG, "McFCountMin : %lu\n",  McSessionData[0].McGroupData.McFCountMin );
+        log(DEBUG, "McFCountMax : %lu\n",  McSessionData[0].McGroupData.McFCountMax );
+        log(DEBUG, "SessionTime : %lu\n",  McSessionData[0].SessionTime );
+        log(DEBUG, "SessionTimeT: %d\n",  McSessionData[0].SessionTimeout );
+        log(DEBUG, "Rx Freq     : %lu\n", McSessionData[0].RxParams.ClassC.Frequency );
+        log(DEBUG, "Rx DR       : DR_%d\n", McSessionData[0].RxParams.ClassC.Datarate );
 
     }
 }

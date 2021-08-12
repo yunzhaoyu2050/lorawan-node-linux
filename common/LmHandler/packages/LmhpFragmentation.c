@@ -215,7 +215,7 @@ static void LmhpFragmentationInit( void *params, uint8_t *dataBuffer, uint8_t da
         // Initialize Fragmentation delay time.
         TxDelayTime = 0;
         // Initialize Fragmentation delay timer.
-        TimerInit( &FragmentTxDelayTimer, OnFragmentTxDelay );
+        TimerInit( &FragmentTxDelayTimer, OnFragmentTxDelay, NULL );
     }
     else
     {
@@ -250,7 +250,7 @@ static void LmhpFragmentationProcess( void )
     {
         case FRAGMENTATION_TX_DELAY_STATE_START:
             // Set the timer with the initially calculated Delay value.
-            TimerSetValue( &FragmentTxDelayTimer, TxDelayTime );
+            TimerSetValue( &FragmentTxDelayTimer, 0, TxDelayTime );
             // Start the timer.
             TimerStart( &FragmentTxDelayTimer );
             break;

@@ -182,7 +182,7 @@ void DisplayMacMcpsRequestUpdate( LoRaMacStatus_t status, McpsReq_t *mcpsReq, Ti
     printf( "STATUS      : %s\n", MacStatusStrings[status] );
     if( status == LORAMAC_STATUS_DUTYCYCLE_RESTRICTED )
     {
-        printf( "Next Tx in  : %lu [ms]\n", nextTxIn );
+        printf( "Next Tx in  : %u [ms]\n", nextTxIn );
     }
 }
 
@@ -229,7 +229,7 @@ void DisplayMacMlmeRequestUpdate( LoRaMacStatus_t status, MlmeReq_t *mlmeReq, Ti
     printf( "STATUS      : %s\n", MacStatusStrings[status] );
     if( status == LORAMAC_STATUS_DUTYCYCLE_RESTRICTED )
     {
-        printf( "Next Tx in  : %lu [ms]\n", nextTxIn );
+        printf( "Next Tx in  : %u [ms]\n", nextTxIn );
     }
 }
 
@@ -241,7 +241,7 @@ void DisplayJoinRequestUpdate( LmHandlerJoinParams_t *params )
         {
             printf( "###### ===========   JOINED     ============ ######\n" );
             printf( "\nOTAA\n\n" );
-            printf( "DevAddr     :  %08lX\n", params->CommissioningParams->DevAddr );
+            printf( "DevAddr     :  %08u\n", params->CommissioningParams->DevAddr );
             printf( "\n\n" );
             printf( "DATA RATE   : DR_%d\n\n", params->Datarate );
         }
@@ -251,7 +251,7 @@ void DisplayJoinRequestUpdate( LmHandlerJoinParams_t *params )
     {
         printf( "###### ===========   JOINED     ============ ######\n" );
         printf( "\nABP\n\n" );
-        printf( "DevAddr     : %08lX\n", params->CommissioningParams->DevAddr );
+        printf( "DevAddr     : %08u\n", params->CommissioningParams->DevAddr );
         printf( "\n\n" );
     }
 #endif
@@ -271,7 +271,7 @@ void DisplayTxUpdate( LmHandlerTxParams_t *params )
     printf( "\n###### =========== MCPS-Confirm ============ ######\n" );
     printf( "STATUS      : %s\n", EventInfoStatusStrings[params->Status] );
 
-    printf( "\n###### =====   UPLINK FRAME %8lu   ===== ######\n", params->UplinkCounter );
+    printf( "\n###### =====   UPLINK FRAME %8u   ===== ######\n", params->UplinkCounter );
     printf( "\n" );
 
     printf( "CLASS       : %c\n", "ABC"[LmHandlerGetCurrentClass( )] );
@@ -298,7 +298,7 @@ void DisplayTxUpdate( LmHandlerTxParams_t *params )
     mibGet.Type  = MIB_CHANNELS;
     if( LoRaMacMibGetRequestConfirm( &mibGet ) == LORAMAC_STATUS_OK )
     {
-        printf( "U/L FREQ    : %lu\n", mibGet.Param.ChannelList[params->Channel].Frequency );
+        printf( "U/L FREQ    : %u\n", mibGet.Param.ChannelList[params->Channel].Frequency );
     }
 
     printf( "TX POWER    : %d\n", params->TxPower );
@@ -356,7 +356,7 @@ void DisplayRxUpdate( LmHandlerAppData_t *appData, LmHandlerRxParams_t *params )
     printf( "\n###### ========== MCPS-Indication ========== ######\n" );
     printf( "STATUS      : %s\n", EventInfoStatusStrings[params->Status] );
 
-    printf( "\n###### =====  DOWNLINK FRAME %8lu  ===== ######\n", params->DownlinkCounter );
+    printf( "\n###### =====  DOWNLINK FRAME %8u  ===== ######\n", params->DownlinkCounter );
 
     printf( "RX WINDOW   : %s\n", slotStrings[params->RxSlot] );
     
@@ -393,12 +393,12 @@ void DisplayBeaconUpdate( LoRaMacHandlerBeaconParams_t *params )
         }
         case LORAMAC_HANDLER_BEACON_RX:
         {
-            printf( "\n###### ===== BEACON %8lu ==== ######\n", params->Info.Time.Seconds );
+            printf( "\n###### ===== BEACON %8u ==== ######\n", (unsigned int)params->Info.Time.tv_sec );
             printf( "GW DESC     : %d\n", params->Info.GwSpecific.InfoDesc );
             printf( "GW INFO     : " );
             PrintHexBuffer( params->Info.GwSpecific.Info, 6 );
             printf( "\n" );
-            printf( "FREQ        : %lu\n", params->Info.Frequency );
+            printf( "FREQ        : %u\n", params->Info.Frequency );
             printf( "DATA RATE   : DR_%d\n", params->Info.Datarate );
             printf( "RX RSSI     : %d\n", params->Info.Rssi );
             printf( "RX SNR      : %d\n", params->Info.Snr );

@@ -33,6 +33,8 @@
 #define LOG_LEVEL  LOG_LVL_DBG
 #include "lora-radio-debug.h"
 
+#include <time.h>
+
 #ifdef LORA_RADIO_DRIVER_USING_ON_RTOS_RT_THREAD
 
 #define EV_LORA_RADIO_DIO_IRQ_FIRED       0x0001
@@ -445,7 +447,7 @@ PacketStatus_t RadioPktStatus;
 uint8_t RadioRxPayload[255];
 
 bool IrqFired = false;
-static bool lora_radio_init = false;
+// static bool lora_radio_init = false;
 /*
  * SX126x DIO IRQ callback functions prototype
  */
@@ -458,17 +460,17 @@ void RadioOnDioIrq( void* context );
 /*!
  * \brief Tx timeout timer callback
  */
-void RadioOnTxTimeoutIrq( void/** context*/ );
+void RadioOnTxTimeoutIrq( void *argc/** context*/ );
 
 /*!
  * \brief Rx timeout timer callback
  */
-void RadioOnRxTimeoutIrq( void/** context*/);
+void RadioOnRxTimeoutIrq( void *argc/** context*/);
 
 /*
  * \brief spi initilize
  */
-extern struct rt_spi_device *lora_radio_spi_init(const char *bus_name,const char *lora_device_name, rt_uint8_t param);
+// extern struct rt_spi_device *lora_radio_spi_init(const char *bus_name,const char *lora_device_name, rt_uint8_t param);
 
 /*
  * Private global variables
@@ -679,7 +681,7 @@ bool RadioIsChannelFree( RadioModems_t modem, uint32_t freq, int16_t rssiThresh,
 {
     bool status = true;
     int16_t rssi = 0;
-    uint32_t carrierSenseTime = 0;
+    struct timespec carrierSenseTime = {0}; //uint32_t carrierSenseTime = 0;
 
     RadioSleep( );
 
@@ -691,10 +693,10 @@ bool RadioIsChannelFree( RadioModems_t modem, uint32_t freq, int16_t rssiThresh,
 
     SX126X_DELAY_MS( 1 );
 
-    carrierSenseTime = TimerGetCurrentTime( );
+    TimerGetCurrentTime(&carrierSenseTime);//carrierSenseTime = TimerGetCurrentTime( );
 
     // Perform carrier sense for maxCarrierSenseTime
-    while( TimerGetElapsedTime( carrierSenseTime ) < maxCarrierSenseTime )
+    while( TimerGetElapsedTime( &carrierSenseTime ) < maxCarrierSenseTime )
     {
         rssi = RadioRssi( modem );
 
@@ -1140,7 +1142,7 @@ void RadioSend( uint8_t *buffer, uint8_t size )
 
     SX126xSendPayload( buffer, size, 0 );
     
-    TimerSetValue( &TxTimeoutTimer, TxTimeout );
+    TimerSetValue( &TxTimeoutTimer, 0, TxTimeout );
     TimerStart( &TxTimeoutTimer );
 }
 
@@ -1168,7 +1170,7 @@ void RadioRx( uint32_t timeout )
 
     if( timeout != 0 )
     {
-        TimerSetValue( &RxTimeoutTimer, timeout );
+        TimerSetValue( &RxTimeoutTimer, 0, timeout );
         TimerStart( &RxTimeoutTimer );
     }
 
@@ -1191,7 +1193,7 @@ void RadioRxBoosted( uint32_t timeout )
 
     if( timeout != 0 )
     {
-        TimerSetValue( &RxTimeoutTimer, timeout );
+        TimerSetValue( &RxTimeoutTimer, 0, timeout );
         TimerStart( &RxTimeoutTimer );
     }
 
@@ -1223,7 +1225,7 @@ void RadioSetTxContinuousWave( uint32_t freq, int8_t power, uint16_t time )
     SX126xSetRfTxPower( power );
     SX126xSetTxContinuousWave( );
 
-    TimerSetValue( &TxTimeoutTimer, timeout );
+    TimerSetValue( &TxTimeoutTimer, 0, timeout );
     TimerStart( &TxTimeoutTimer );
 }
 
@@ -1292,7 +1294,7 @@ uint32_t RadioGetWakeupTime( void )
     return SX126xGetBoardTcxoWakeupTime( ) + RADIO_WAKEUP_TIME;
 }
 
-void RadioOnTxTimeoutIrq( void /** context*/ )
+void RadioOnTxTimeoutIrq( void *argc /** context*/ )
 {
     if( ( RadioEvents != NULL ) && ( RadioEvents->TxTimeout != NULL ) )
     {
@@ -1301,7 +1303,7 @@ void RadioOnTxTimeoutIrq( void /** context*/ )
     LORA_RADIO_DEBUG_LOG(LR_DBG_INTERFACE, LOG_LEVEL, "PHY TX Timeout\r");
 }
 
-void RadioOnRxTimeoutIrq( void /** context*/ )
+void RadioOnRxTimeoutIrq( void *argc /** context*/ )
 {
     if( ( RadioEvents != NULL ) && ( RadioEvents->RxTimeout != NULL ) )
     {

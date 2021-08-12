@@ -23,10 +23,10 @@
 
 #include "./common/githubVersion.h"
 #include "RegionCommon.h"
-#include "board.h"
+// #include "board.h"
 #include "firmwareVersion.h"
 #include "gpio.h"
-#include "uart.h"
+// #include "uart.h"
 #include "utilities.h"
 
 #include "Commissioning.h"
@@ -38,7 +38,6 @@
 #include "LmhpRemoteMcastSetup.h"
 #include "cli.h"
 
-#include "log.h"
 #include "radio.h"
 #include "sx126x-board.h"
 #include "timer.h"
@@ -46,11 +45,16 @@
 #include <getopt.h>
 #include <stdint.h>
 #include <stdio.h>
+#include <string.h>
 #include <sys/select.h>
 #include <sys/time.h>
 #include <time.h>
 #include <unistd.h>
-#include <string.h>
+#include "main.h"
+#include <stdlib.h>
+#include "lora-radio-rtos-config.h"
+#include "lora-spi-sx126x.h"
+#include "log.h"
 
 #ifndef ACTIVE_REGION
 
@@ -64,7 +68,7 @@
 /*!
  * LoRaWAN default end-device class
  */
-#define LORAWAN_DEFAULT_CLASS CLASS_A
+#define LORAWAN_DEFAULT_CLASS CLASS_B
 
 /*!
  * Defines the application data transmission duty cycle. 40s, value in [ms].
@@ -199,9 +203,9 @@ static void OnLed2TimerEvent(void *context);
 static void OnLedBeaconTimerEvent(void *context);
 
 static LmHandlerCallbacks_t LmHandlerCallbacks = {
-    .GetBatteryLevel = BoardGetBatteryLevel,
+    .GetBatteryLevel = NULL,
     .GetTemperature = NULL,
-    .GetRandomSeed = BoardGetRandomSeed,
+    .GetRandomSeed = NULL,
     .OnMacProcess = OnMacProcessNotify,
     .OnNvmDataChange = OnNvmDataChange,
     .OnNetworkParametersChange = OnNetworkParametersChange,
@@ -301,13 +305,13 @@ static volatile uint32_t FileRxCrc = 0;
 /*!
  * LED GPIO pins objects
  */
-extern Gpio_t Led1; // Tx
-extern Gpio_t Led2; // Rx
+// extern Gpio_t Led1; // Tx
+// extern Gpio_t Led2; // Rx
 
 /*!
  * UART object used for command line interface handling
  */
-extern Uart_t Uart2;
+// extern Uart_t Uart2;
 
 static const char *g_spi_device = "/dev/spidev1.1";
 static unsigned int g_loop_tv = 0;
@@ -346,12 +350,7 @@ static void parse_opts(int argc, char *argv[]) {
   }
 }
 
-// test
-LORA_RADIO_RESET_PIN = 0;
-LORA_RADIO_BUSY_PIN = 0;
-LORA_RADIO_DIO1_PIN = 0;
-
-radiodev_t radiodev; // 对接成全局参数以供多个模块使用
+radiodev_t radiodev;
 
 /*!
  * Main application entry point.
@@ -427,7 +426,7 @@ int main(int argc, char *argv[]) {
 
   StartTxProcess(LORAMAC_HANDLER_TX_ON_TIMER);
 
-  time_t lastTime = 0;
+  // time_t lastTime = 0;
   struct timespec last_ts = {0};
   struct timespec now_ts = {0};
 
@@ -446,7 +445,7 @@ int main(int argc, char *argv[]) {
       // dio1 irq
       if (FD_ISSET(dio1_fd, &fd_mask)) {
         // dio1 irq callback function
-        srdio1.callBack();
+        radiodev.dio1_callBack(NULL);
       }
     }
     clock_gettime(CLOCK_MONOTONIC, &now_ts);
@@ -460,7 +459,7 @@ int main(int argc, char *argv[]) {
       sums += tms;
     } else if (sums >= 100) { // 100 ms process
       // Process characters sent over the command line interface
-      CliProcess(&Uart2);
+      // CliProcess(&Uart2);
       // Processes the LoRaMac events
       LmHandlerProcess();
       // Process application uplinks management
@@ -471,7 +470,7 @@ int main(int argc, char *argv[]) {
         IsMacProcessPending = 0;
       } else {
         // The MCU wakes up through events
-        BoardLowPowerHandler();
+        // BoardLowPowerHandler();
       }
       CRITICAL_SECTION_END();
       sums = 0;
@@ -481,7 +480,7 @@ int main(int argc, char *argv[]) {
   close(dio1_fd);
   close(radiodev.spidev_pt);
   return 0;
-exit2:
+// exit2:
   close(dio1_fd);
 exit1:
   close(radiodev.spidev_pt);
@@ -548,7 +547,7 @@ static void OnClassChange(DeviceClass_t deviceClass) {
   case CLASS_C: {
     IsMcSessionStarted = true;
     // Switch LED 2 ON
-    GpioWrite(&Led2, 1);
+    // GpioWrite(&Led2, 1);
     break;
   }
   }
@@ -606,7 +605,7 @@ static int8_t FragDecoderRead(uint32_t addr, uint8_t *data, uint32_t size) {
 static void OnFragProgress(uint16_t fragCounter, uint16_t fragNb,
                            uint8_t fragSize, uint16_t fragNbLost) {
   // Switch LED 2 OFF for each received downlink
-  GpioWrite(&Led2, 0);
+  // GpioWrite(&Led2, 0);
   TimerStart(&Led2Timer);
 
   printf("\n###### =========== FRAG_DECODER ============ ######\n");
@@ -623,20 +622,20 @@ static void OnFragDone(int32_t status, uint32_t size) {
   FileRxCrc = Crc32(UnfragmentedData, size);
   IsFileTransferDone = true;
   // Switch LED 2 OFF
-  GpioWrite(&Led2, 0);
+  // GpioWrite(&Led2, 0);
 
   printf("\n###### =========== FRAG_DECODER ============ ######\n");
   printf("######               FINISHED                ######\n");
   printf("###### ===================================== ######\n");
-  printf("STATUS      : %ld\n", status);
-  printf("CRC         : %08lX\n\n", FileRxCrc);
+  printf("STATUS      : %d\n", status);
+  printf("CRC         : %08u\n\n", FileRxCrc);
 }
 #else
 static void OnFragDone(int32_t status, uint8_t *file, uint32_t size) {
   FileRxCrc = Crc32(file, size);
   IsFileTransferDone = true;
   // Switch LED 2 OFF
-  GpioWrite(&Led2, 0);
+  // GpioWrite(&Led2, 0);
 
   printf("\n###### =========== FRAG_DECODER ============ ######\n");
   printf("######               FINISHED                ######\n");
@@ -652,8 +651,8 @@ static void StartTxProcess(LmHandlerTxEvents_t txEvent) {
     // Intentional fall through
   case LORAMAC_HANDLER_TX_ON_TIMER: {
     // Schedule 1st packet transmission
-    TimerInit(&TxTimer, OnTxTimerEvent);
-    TimerSetValue(&TxTimer, TxPeriodicity);
+    TimerInit(&TxTimer, OnTxTimerEvent, NULL);
+    TimerSetValue(&TxTimer, 0, TxPeriodicity);
     OnTxTimerEvent(NULL);
   } break;
   case LORAMAC_HANDLER_TX_ON_EVENT: {
@@ -705,7 +704,7 @@ static void UplinkProcess(void) {
       }
       if (status == LORAMAC_HANDLER_SUCCESS) {
         // Switch LED 1 ON
-        GpioWrite(&Led1, 1);
+        // GpioWrite(&Led1, 1);
         TimerStart(&Led1Timer);
       }
     }
@@ -722,7 +721,7 @@ static void OnTxPeriodicityChanged(uint32_t periodicity) {
 
   // Update timer periodicity
   TimerStop(&TxTimer);
-  TimerSetValue(&TxTimer, TxPeriodicity);
+  TimerSetValue(&TxTimer, 0, TxPeriodicity);
   TimerStart(&TxTimer);
 }
 
@@ -743,7 +742,7 @@ static void OnTxTimerEvent(void *context) {
   IsTxFramePending = 1;
 
   // Schedule next transmission
-  TimerSetValue(&TxTimer, TxPeriodicity);
+  TimerSetValue(&TxTimer, 0, TxPeriodicity);
   TimerStart(&TxTimer);
 }
 
@@ -753,7 +752,7 @@ static void OnTxTimerEvent(void *context) {
 static void OnLed1TimerEvent(void *context) {
   TimerStop(&Led1Timer);
   // Switch LED 1 OFF
-  GpioWrite(&Led1, 0);
+  // GpioWrite(&Led1, 0);
 }
 
 /*!
@@ -762,14 +761,14 @@ static void OnLed1TimerEvent(void *context) {
 static void OnLed2TimerEvent(void *context) {
   TimerStop(&Led2Timer);
   // Switch LED 2 ON
-  GpioWrite(&Led2, 1);
+  // GpioWrite(&Led2, 1);
 }
 
 /*!
  * \brief Function executed on Beacon timer Timeout event
  */
 static void OnLedBeaconTimerEvent(void *context) {
-  GpioWrite(&Led2, 1);
+  // GpioWrite(&Led2, 1);
   TimerStart(&Led2Timer);
 
   TimerStart(&LedBeaconTimer);

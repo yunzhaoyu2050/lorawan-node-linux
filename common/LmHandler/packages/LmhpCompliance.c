@@ -21,7 +21,7 @@
 #include <stdlib.h>
 #include <stdint.h>
 #include <stdbool.h>
-#include "board.h"
+// #include "board.h"
 #include "NvmDataMgmt.h"
 #include "LoRaMacTest.h"
 #include "LmHandler.h"

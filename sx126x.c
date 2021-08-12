@@ -22,11 +22,12 @@
  */
  
 #include "lora-radio-rtos-config.h"
-#include <board.h>
+// #include <board.h>
 #include "lora-radio-timer.h"
 #include "radio.h"
 #include "lora-spi-sx126x.h"
 #include "sx126x-board.h"
+#include <string.h>
 
 /*!
  * \brief Radio registers definition
@@ -86,7 +87,7 @@ void SX126xSetInterruptMode( void );
  */
 void SX126xProcessIrqs( void );
 
-void SX126xInit( DioIrqHandler dioIrq )
+void SX126xInit( DioIrqHandler *dioIrq )
 {   
     SX126xReset( );
 
@@ -120,24 +121,24 @@ void SX126xSetOperatingMode( RadioOperatingModes_t mode )
     SX126xSetAntSw( mode );
 #endif
     
-#if defined( USE_RADIO_DEBUG )
-    switch( mode )
-    {
-        case MODE_TX:
-            SX126xDbgPinTxWrite( 1 );
-            SX126xDbgPinRxWrite( 0 );
-            break;
-        case MODE_RX:
-        case MODE_RX_DC:
-            SX126xDbgPinTxWrite( 0 );
-            SX126xDbgPinRxWrite( 1 );
-            break;
-        default:
-            SX126xDbgPinTxWrite( 0 );
-            SX126xDbgPinRxWrite( 0 );
-            break;
-    }
-#endif
+// #if defined( USE_RADIO_DEBUG )
+//     switch( mode )
+//     {
+//         case MODE_TX:
+//             SX126xDbgPinTxWrite( 1 );
+//             SX126xDbgPinRxWrite( 0 );
+//             break;
+//         case MODE_RX:
+//         case MODE_RX_DC:
+//             SX126xDbgPinTxWrite( 0 );
+//             SX126xDbgPinRxWrite( 1 );
+//             break;
+//         default:
+//             SX126xDbgPinTxWrite( 0 );
+//             SX126xDbgPinRxWrite( 0 );
+//             break;
+//     }
+// #endif
 }
 
 void SX126xCheckDeviceReady( void )
@@ -769,7 +770,7 @@ void SX126xGetPacketStatus( PacketStatus_t *pktStatus )
         case PACKET_TYPE_NONE:
             // In that specific case, we set everything in the pktStatus to zeros
             // and reset the packet type accordingly
-            rt_memset( pktStatus, 0, sizeof( PacketStatus_t ) );
+            memset( pktStatus, 0, sizeof( PacketStatus_t ) );
             pktStatus->packetType = PACKET_TYPE_NONE;
             break;
     }

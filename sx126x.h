@@ -28,7 +28,7 @@
 #include <math.h>
 //#include "gpio.h"
 //#include "spi.h"
-#include "radio.h"
+// #include "radio.h"
 
 #define SX1261                                      1
 #define SX1262                                      2
@@ -722,7 +722,7 @@ typedef struct
 /*!
  * \brief Initializes the radio driver
  */
-void SX126xInit( DioIrqHandler dioIrq );
+void SX126xInit( DioIrqHandler *dioIrq );
 
 /*!
  * \brief Gets the current Radio OperationMode variable

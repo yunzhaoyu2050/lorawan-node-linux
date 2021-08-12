@@ -14,11 +14,11 @@
 //#define LORA_RADIO_DRIVER_USING_ON_RTOS_RT_THREAD
 //#define LORA_RADIO_DRIVER_USING_ON_RTOS_RT_THREAD_NANO
 
-#ifdef LORA_RADIO_DRIVER_USING_ON_RTOS_RT_THREAD
-#elif defined LORA_RADIO_DRIVER_USING_ON_RTOS_RT_THREAD_NANO
-#else
-    #error "Please Choose your RTOS setup!"
-#endif
+// #ifdef LORA_RADIO_DRIVER_USING_ON_RTOS_RT_THREAD
+// #elif defined LORA_RADIO_DRIVER_USING_ON_RTOS_RT_THREAD_NANO
+// #else
+//     #error "Please Choose your RTOS setup!"
+// #endif
 
 #ifdef LORA_RADIO_DRIVER_USING_ON_RTOS_RT_THREAD
 #include <rtthread.h>
@@ -36,6 +36,10 @@
 
 #endif
 
+#define LORA_RADIO_USE_TCXO
+#define LORA_RADIO_USE_DIO2_AS_RF_SWITCH_CTRL
 
+#include "LoRaMac.h"
+#define ACTIVE_REGION LORAMAC_REGION_CN470
 
 #endif // end of __LORA_RADIO_RTOS_CONFIG_H_

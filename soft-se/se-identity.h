@@ -36,6 +36,7 @@ extern "C" {
  ******************************************************************************
   The secure-element implementation supports both 1.0.x and 1.1.x LoRaWAN
   versions of the specification.
+  安全元件实现支持规范的 1.0.x 和 1.1.x LoRaWAN 版本。
   Thus it has been decided to use the 1.1.x keys and EUI name definitions.
   The below table shows the names equivalence between versions:
                +---------------------+-------------------------+
