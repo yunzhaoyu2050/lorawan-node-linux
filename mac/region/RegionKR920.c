@@ -32,6 +32,7 @@
 #include "RegionCommon.h"
 #include "RegionKR920.h"
 
+#ifdef REGION_KR920
 // Definitions
 #define CHANNELS_MASK_SIZE                1
 
@@ -934,3 +935,4 @@ void RegionKR920RxBeaconSetup( RxBeaconSetup_t* rxBeaconSetup, uint8_t* outDr )
     // Store downlink datarate
     *outDr = KR920_BEACON_CHANNEL_DR;
 }
+#endif

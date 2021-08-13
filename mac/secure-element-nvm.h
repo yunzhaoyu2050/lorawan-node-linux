@@ -35,77 +35,73 @@
 #define __SECURE_ELEMENT_NVM_H__
 
 #ifdef __cplusplus
-extern "C"
-{
+extern "C" {
 #endif
 
-#include <stdint.h>
 #include "LoRaMacTypes.h"
+#include <stdint.h>
 
 /*!
  * Secure-element keys size in bytes
  */
-#define SE_KEY_SIZE             16
+#define SE_KEY_SIZE 16
 
 /*!
  * Secure-element EUI size in bytes
  */
-#define SE_EUI_SIZE             8
+#define SE_EUI_SIZE 8
 
 /*!
  * Secure-element pin size in bytes
  */
-#define SE_PIN_SIZE             4
+#define SE_PIN_SIZE 4
 
 #ifdef SOFT_SE
 /*!
  * Number of supported crypto keys for the soft-se
  */
-#define NUM_OF_KEYS             23
+#define NUM_OF_KEYS 23
 
 /*!
  * Key structure definition for the soft-se
  */
-typedef struct sKey
-{
-    /*!
-     * Key identifier
-     */
-    KeyIdentifier_t KeyID;
-    /*!
-     * Key value
-     */
-    uint8_t KeyValue[SE_KEY_SIZE];
+typedef struct sKey {
+  /*!
+   * Key identifier
+   */
+  KeyIdentifier_t KeyID;
+  /*!
+   * Key value
+   */
+  uint8_t KeyValue[SE_KEY_SIZE];
 } Key_t;
 #endif
 
-typedef struct sSecureElementNvCtx
-{
-    /*!
-     * DevEUI storage
-     */
-    uint8_t DevEui[SE_EUI_SIZE];
-    /*!
-     * Join EUI storage
-     */
-    uint8_t JoinEui[SE_EUI_SIZE];
-    /*!
-     * Pin storage
-     */
-    uint8_t Pin[SE_PIN_SIZE];
+typedef struct sSecureElementNvCtx {
+  /*!
+   * DevEUI storage
+   */
+  uint8_t DevEui[SE_EUI_SIZE];
+  /*!
+   * Join EUI storage
+   */
+  uint8_t JoinEui[SE_EUI_SIZE];
+  /*!
+   * Pin storage
+   */
+  uint8_t Pin[SE_PIN_SIZE];
 #ifdef SOFT_SE
-    /*!
-     * The key list is required for the soft-se only. All other secure-elements
-     * handle the storage on their own.
-     */
-    Key_t KeyList[NUM_OF_KEYS];
+  /*!
+   * The key list is required for the soft-se only. All other secure-elements
+   * handle the storage on their own.
+   */
+  Key_t KeyList[NUM_OF_KEYS];
 #endif
-    /*!
-     * CRC32 value of the SecureElement data structure.
-     */
-    uint32_t Crc32;
+  /*!
+   * CRC32 value of the SecureElement data structure.
+   */
+  uint32_t Crc32;
 } SecureElementNvmData_t;
-
 
 /*! \} addtogroup SECUREELEMENT */
 

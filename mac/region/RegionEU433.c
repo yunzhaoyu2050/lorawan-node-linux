@@ -32,6 +32,8 @@
 #include "RegionCommon.h"
 #include "RegionEU433.h"
 
+#ifdef REGION_EU433
+
 // Definitions
 #define CHANNELS_MASK_SIZE              1
 
@@ -922,3 +924,4 @@ void RegionEU433RxBeaconSetup( RxBeaconSetup_t* rxBeaconSetup, uint8_t* outDr )
     // Store downlink datarate
     *outDr = EU433_BEACON_CHANNEL_DR;
 }
+#endif

@@ -32,6 +32,7 @@
 #include "RegionCommon.h"
 #include "RegionCN779.h"
 
+#ifdef REGION_CN779
 // Definitions
 #define CHANNELS_MASK_SIZE              1
 
@@ -922,3 +923,4 @@ void RegionCN779RxBeaconSetup( RxBeaconSetup_t* rxBeaconSetup, uint8_t* outDr )
     // Store downlink datarate
     *outDr = CN779_BEACON_CHANNEL_DR;
 }
+#endif

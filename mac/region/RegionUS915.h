@@ -42,7 +42,7 @@ extern "C"
 {
 #endif
 
-#include "region/Region.h"
+#ifdef REGION_US915
 
 /*!
  * LoRaMac maximum number of channels
@@ -436,7 +436,7 @@ uint8_t RegionUS915ApplyDrOffset( uint8_t downlinkDwellTime, int8_t dr, int8_t d
 void RegionUS915RxBeaconSetup( RxBeaconSetup_t* rxBeaconSetup, uint8_t* outDr );
 
 /*! \} defgroup REGIONUS915 */
-
+#endif
 #ifdef __cplusplus
 }
 #endif

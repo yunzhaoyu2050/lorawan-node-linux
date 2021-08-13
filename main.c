@@ -52,7 +52,7 @@
 #include <unistd.h>
 #include "main.h"
 #include <stdlib.h>
-#include "lora-radio-rtos-config.h"
+#include "lora-radio-config.h"
 #include "lora-spi-sx126x.h"
 #include "log.h"
 
@@ -381,8 +381,6 @@ int main(int argc, char *argv[]) {
   }
   FD_SET(dio1_fd, &fd_mask);
   max_fd = MAX(max_fd, dio1_fd);
-  // BoardInitMcu();
-  // BoardInitPeriph();
 
   TimerInit(&Led1Timer, OnLed1TimerEvent, NULL);
   TimerSetValue(&Led1Timer, 0, 25);
@@ -413,7 +411,7 @@ int main(int argc, char *argv[]) {
   LmHandlerSetSystemMaxRxError(20);
 
   // The LoRa-Alliance Compliance protocol package should always be
-  // initialized and activated.
+  // initialized and activated. LoRa-Alliance Compliance 协议包应始终初始化和激活
   LmHandlerPackageRegister(PACKAGE_ID_COMPLIANCE, &LmhpComplianceParams);
   LmHandlerPackageRegister(PACKAGE_ID_CLOCK_SYNC, NULL);
   LmHandlerPackageRegister(PACKAGE_ID_REMOTE_MCAST_SETUP, NULL);

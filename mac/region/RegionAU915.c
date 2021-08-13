@@ -33,6 +33,7 @@
 #include "RegionAU915.h"
 #include "RegionBaseUS.h"
 
+#ifdef REGION_AU915
 // Definitions
 #define CHANNELS_MASK_SIZE              6
 
@@ -937,3 +938,4 @@ void RegionAU915RxBeaconSetup( RxBeaconSetup_t* rxBeaconSetup, uint8_t* outDr )
     // Store downlink datarate
     *outDr = AU915_BEACON_CHANNEL_DR;
 }
+#endif

@@ -42,8 +42,10 @@ extern "C"
 {
 #endif
 
+#include "lora-radio-config.h"
 #include "region/Region.h"
 
+#ifdef REGION_CN470
 /*!
  * LoRaMac maximum number of channels
  */
@@ -451,7 +453,7 @@ uint8_t RegionCN470ApplyDrOffset( uint8_t downlinkDwellTime, int8_t dr, int8_t d
  void RegionCN470RxBeaconSetup( RxBeaconSetup_t* rxBeaconSetup, uint8_t* outDr );
 
 /*! \} defgroup REGIONCN470 */
-
+#endif
 #ifdef __cplusplus
 }
 #endif

@@ -36,6 +36,7 @@
 #include "RegionCN470A26.h"
 #include "RegionCN470B26.h"
 
+#ifdef REGION_CN470
 // Definitions
 #define CHANNELS_MASK_SIZE              6
 
@@ -1035,3 +1036,4 @@ void RegionCN470RxBeaconSetup( RxBeaconSetup_t* rxBeaconSetup, uint8_t* outDr )
     // Store downlink datarate
     *outDr = CN470_BEACON_CHANNEL_DR;
 }
+#endif

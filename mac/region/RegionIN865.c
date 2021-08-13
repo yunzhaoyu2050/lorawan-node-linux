@@ -32,6 +32,7 @@
 #include "RegionCommon.h"
 #include "RegionIN865.h"
 
+#ifdef REGION_IN865
 // Definitions
 #define CHANNELS_MASK_SIZE              1
 
@@ -945,3 +946,4 @@ void RegionIN865RxBeaconSetup( RxBeaconSetup_t* rxBeaconSetup, uint8_t* outDr )
     // Store downlink datarate
     *outDr = IN865_BEACON_CHANNEL_DR;
 }
+#endif

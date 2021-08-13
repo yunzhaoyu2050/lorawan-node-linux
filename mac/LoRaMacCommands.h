@@ -36,92 +36,88 @@
 #define __LORAMAC_COMMANDS_H__
 
 #ifdef __cplusplus
-extern "C"
-{
+extern "C" {
 #endif
 
-#include <stdint.h>
-#include <stddef.h>
 #include "LoRaMacTypes.h"
-
+#include <stddef.h>
+#include <stdint.h>
 
 /*
  * Number of MAC Command slots
  */
-#define LORAMAC_COMMADS_MAX_NUM_OF_PARAMS   2
+#define LORAMAC_COMMADS_MAX_NUM_OF_PARAMS 2
 
 /*!
  * LoRaWAN MAC Command element
  */
 typedef struct sMacCommand MacCommand_t;
 
-struct sMacCommand
-{
-    /*!
-     *  The pointer to the next MAC Command element in the list
-     */
-    MacCommand_t* Next;
-    /*!
-     * MAC command identifier
-     */
-    uint8_t CID;
-    /*!
-     * MAC command payload
-     */
-    uint8_t Payload[LORAMAC_COMMADS_MAX_NUM_OF_PARAMS];
-    /*!
-     * Size of MAC command payload
-     */
-    size_t PayloadSize;
-    /*!
-     * Indicates if it's a sticky MAC command
-     */
-    bool IsSticky;
+struct sMacCommand {
+  /*!
+   *  The pointer to the next MAC Command element in the list
+   */
+  MacCommand_t *Next;
+  /*!
+   * MAC command identifier
+   */
+  uint8_t CID;
+  /*!
+   * MAC command payload
+   */
+  uint8_t Payload[LORAMAC_COMMADS_MAX_NUM_OF_PARAMS];
+  /*!
+   * Size of MAC command payload
+   */
+  size_t PayloadSize;
+  /*!
+   * Indicates if it's a sticky MAC command
+   */
+  bool IsSticky;
 };
 
 /*!
  * LoRaMac Commands Status
  */
-typedef enum eLoRaMacCommandsStatus
-{
-    /*!
-     * No error occurred
-     */
-    LORAMAC_COMMANDS_SUCCESS = 0,
-    /*!
-     * Null pointer exception
-     */
-    LORAMAC_COMMANDS_ERROR_NPE,
-    /*!
-     * There is no memory left to add a further MAC command
-     */
-    LORAMAC_COMMANDS_ERROR_MEMORY,
-    /*!
-     * MAC command not found.
-     */
-    LORAMAC_COMMANDS_ERROR_CMD_NOT_FOUND,
-    /*!
-     * Unknown or corrupted command error occurred.
-     */
-    LORAMAC_COMMANDS_ERROR_UNKNOWN_CMD,
-    /*!
-     * Undefined Error occurred
-     */
-    LORAMAC_COMMANDS_ERROR,
-}LoRaMacCommandStatus_t;
+typedef enum eLoRaMacCommandsStatus {
+  /*!
+   * No error occurred
+   */
+  LORAMAC_COMMANDS_SUCCESS = 0,
+  /*!
+   * Null pointer exception
+   */
+  LORAMAC_COMMANDS_ERROR_NPE,
+  /*!
+   * There is no memory left to add a further MAC command
+   */
+  LORAMAC_COMMANDS_ERROR_MEMORY,
+  /*!
+   * MAC command not found.
+   */
+  LORAMAC_COMMANDS_ERROR_CMD_NOT_FOUND,
+  /*!
+   * Unknown or corrupted command error occurred.
+   */
+  LORAMAC_COMMANDS_ERROR_UNKNOWN_CMD,
+  /*!
+   * Undefined Error occurred
+   */
+  LORAMAC_COMMANDS_ERROR,
+} LoRaMacCommandStatus_t;
 
 /*!
  * Signature of callback function to be called by this module when the
  * non-volatile needs to be saved.
  */
-typedef void ( *LoRaMacCommandsNvmEvent )( void );
+typedef void (*LoRaMacCommandsNvmEvent)(void);
 
 /*!
  * \brief Initialization of LoRaMac MAC commands module
  *
  * \retval                            - Status of the operation
  */
-LoRaMacCommandStatus_t LoRaMacCommandsInit( void );
+LoRaMacCommandStatus_t LoRaMacCommandsInit(void);
 
 /*!
  * \brief Adds a new MAC command to be sent.
@@ -132,7 +128,8 @@ LoRaMacCommandStatus_t LoRaMacCommandsInit( void );
  *
  * \retval                     - Status of the operation
  */
-LoRaMacCommandStatus_t LoRaMacCommandsAddCmd( uint8_t cid, uint8_t* payload, size_t payloadSize );
+LoRaMacCommandStatus_t LoRaMacCommandsAddCmd(uint8_t cid, uint8_t *payload,
+                                             size_t payloadSize);
 
 /*!
  * \brief Remove a MAC command.
@@ -141,7 +138,7 @@ LoRaMacCommandStatus_t LoRaMacCommandsAddCmd( uint8_t cid, uint8_t* payload, siz
  *
  * \retval                     - Status of the operation
  */
-LoRaMacCommandStatus_t LoRaMacCommandsRemoveCmd( MacCommand_t* macCmd );
+LoRaMacCommandStatus_t LoRaMacCommandsRemoveCmd(MacCommand_t *macCmd);
 
 /*!
  * \brief Get the MAC command with corresponding CID.
@@ -151,21 +148,22 @@ LoRaMacCommandStatus_t LoRaMacCommandsRemoveCmd( MacCommand_t* macCmd );
  *
  * \retval                     - Status of the operation
  */
-LoRaMacCommandStatus_t LoRaMacCommandsGetCmd( uint8_t cid, MacCommand_t** macCmd );
+LoRaMacCommandStatus_t LoRaMacCommandsGetCmd(uint8_t cid,
+                                             MacCommand_t **macCmd);
 
 /*!
  * \brief Remove all none sticky MAC commands.
  *
  * \retval                     - Status of the operation
  */
-LoRaMacCommandStatus_t LoRaMacCommandsRemoveNoneStickyCmds( void );
+LoRaMacCommandStatus_t LoRaMacCommandsRemoveNoneStickyCmds(void);
 
 /*!
  * \brief Remove all sticky answer MAC commands.
  *
  * \retval                     - Status of the operation
  */
-LoRaMacCommandStatus_t LoRaMacCommandsRemoveStickyAnsCmds( void );
+LoRaMacCommandStatus_t LoRaMacCommandsRemoveStickyAnsCmds(void);
 
 /*!
  * \brief Get size of all MAC commands serialized as buffer
@@ -174,27 +172,30 @@ LoRaMacCommandStatus_t LoRaMacCommandsRemoveStickyAnsCmds( void );
  *
  * \retval                     - Status of the operation
  */
-LoRaMacCommandStatus_t LoRaMacCommandsGetSizeSerializedCmds( size_t* size );
+LoRaMacCommandStatus_t LoRaMacCommandsGetSizeSerializedCmds(size_t *size);
 
 /*!
  * \brief Get as many as possible MAC commands serialized
  *
  * \param[IN]   availableSize      - Available size of memory for MAC commands
- * \param[out]  effectiveSize      - Size of memory which was effectively used for serializing.
- * \param[out]  buffer             - Destination data buffer
+ * \param[out]  effectiveSize      - Size of memory which was effectively used
+ * for serializing. \param[out]  buffer             - Destination data buffer
  *
  * \retval                     - Status of the operation
  */
-LoRaMacCommandStatus_t LoRaMacCommandsSerializeCmds( size_t availableSize, size_t* effectiveSize,  uint8_t* buffer );
+LoRaMacCommandStatus_t LoRaMacCommandsSerializeCmds(size_t availableSize,
+                                                    size_t *effectiveSize,
+                                                    uint8_t *buffer);
 
 /*!
  * \brief Determines if there are sticky MAC commands pending.
  *
- * \param[IN]   cmdsPending        - Indicates if there are sticky MAC commands in the queue.
+ * \param[IN]   cmdsPending        - Indicates if there are sticky MAC commands
+ * in the queue.
  *
  * \retval                     - Status of the operation
  */
-LoRaMacCommandStatus_t LoRaMacCommandsStickyCmdsPending( bool* cmdsPending );
+LoRaMacCommandStatus_t LoRaMacCommandsStickyCmdsPending(bool *cmdsPending);
 
 /*!
  * \brief Get the MAC command size with corresponding CID.
@@ -203,7 +204,7 @@ LoRaMacCommandStatus_t LoRaMacCommandsStickyCmdsPending( bool* cmdsPending );
  *
  * \retval Size of the command.
  */
-uint8_t LoRaMacCommandsGetCmdSize( uint8_t cid );
+uint8_t LoRaMacCommandsGetCmdSize(uint8_t cid);
 
 /*! \} addtogroup LORAMAC */
 
@@ -212,4 +213,3 @@ uint8_t LoRaMacCommandsGetCmdSize( uint8_t cid );
 #endif
 
 #endif // __LORAMAC_COMMANDS_H__
-

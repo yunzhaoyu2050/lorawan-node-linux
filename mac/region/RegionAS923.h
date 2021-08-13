@@ -42,9 +42,10 @@ extern "C"
 {
 #endif
 
+#include "lora-radio-config.h"
 #include "region/Region.h"
 
-
+#ifdef REGION_AS923
 /*!
  * Channel plan group AS923-1
  * AS923_FREQ_OFFSET = 0
@@ -529,6 +530,7 @@ uint8_t RegionAS923ApplyDrOffset( uint8_t downlinkDwellTime, int8_t dr, int8_t d
  void RegionAS923RxBeaconSetup( RxBeaconSetup_t* rxBeaconSetup, uint8_t* outDr );
 
 /*! \} defgroup REGIONAS923 */
+#endif
 
 #ifdef __cplusplus
 }

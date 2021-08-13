@@ -16,11 +16,11 @@
  *
  * \endcode
  */
-#include <stdio.h>
-#include <stdint.h>
-#include <stdbool.h>
-#include "NvmDataMgmt.h"
 #include "cli.h"
+#include "NvmDataMgmt.h"
+#include <stdbool.h>
+#include <stdint.h>
+#include <stdio.h>
 
 // void CliProcess( Uart_t* uart )
 // {
@@ -47,7 +47,7 @@
 //                 {
 //                     printf( "\n\nNVM factory reset failed\n" );
 //                 }
-                
+
 //                 printf( "\n\nPLEASE RESET THE END-DEVICE\n\n" );
 //                 while( 1 );
 //             }

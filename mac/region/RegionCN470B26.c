@@ -33,6 +33,8 @@
 #include "RegionCN470A26.h"
 #include "RegionCN470B26.h"
 
+#ifdef REGION_CN470
+
 uint32_t RegionCN470B26GetDownlinkFrequency( uint8_t channel, uint8_t joinChannelIndex, bool isPingSlot )
 {
     return CN470_B26_BEACON_FREQ;
@@ -87,4 +89,4 @@ uint32_t RegionCN470B26GetRx2Frequency( uint8_t joinChannelIndex, bool isOtaaDev
 {
     return CN470_B26_RX_WND_2_FREQ;
 }
-
+#endif

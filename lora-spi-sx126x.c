@@ -1,6 +1,6 @@
-#include "sx126x-board.h"
 #include "lora-spi-sx126x.h"
 #include "log.h"
+#include "sx126x-board.h"
 #include <fcntl.h>
 #include <linux/spi/spidev.h>
 #include <stdarg.h>

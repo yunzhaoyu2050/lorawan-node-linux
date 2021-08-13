@@ -11,7 +11,6 @@ SRCHINCLUDE := $(addprefix -I,$(SRCDIR))
 OBJDIR := build
 OBJSUBDIR := $(addprefix build/,$(SRCDIR))
 SRC = $(wildcard $(SRCCFILE))
-# SRCO = $(notdir $(SRC))
 OBJS := $(patsubst %.c,$(OBJDIR)/%.o,$(SRC))
 
 CFLAGS += -Wall -g -std=gnu99 -pipe -mno-branch-likely -mips32r2 -mtune=24kec -mdsp -fno-caller-saves -fhonour-copts -Wno-error=unused-but-set-variable -Wno-error=unused-result -msoft-float

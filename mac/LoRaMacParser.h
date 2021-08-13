@@ -38,36 +38,33 @@
 #define __LORAMAC_PARSER_H__
 
 #ifdef __cplusplus
-extern "C"
-{
+extern "C" {
 #endif
 
-#include <stdint.h>
 #include "LoRaMacMessageTypes.h"
+#include <stdint.h>
 
 /*!
  * LoRaMac Parser Status
  */
-typedef enum eLoRaMacParserStatus
-{
-    /*!
-     * No error occurred
-     */
-    LORAMAC_PARSER_SUCCESS = 0,
-    /*!
-     * Failure during parsing occurred
-     */
-    LORAMAC_PARSER_FAIL,
-    /*!
-     * Null pointer exception
-     */
-    LORAMAC_PARSER_ERROR_NPE,
-    /*!
-     * Undefined Error occurred
-     */
-    LORAMAC_PARSER_ERROR,
-}LoRaMacParserStatus_t;
-
+typedef enum eLoRaMacParserStatus {
+  /*!
+   * No error occurred
+   */
+  LORAMAC_PARSER_SUCCESS = 0,
+  /*!
+   * Failure during parsing occurred
+   */
+  LORAMAC_PARSER_FAIL,
+  /*!
+   * Null pointer exception
+   */
+  LORAMAC_PARSER_ERROR_NPE,
+  /*!
+   * Undefined Error occurred
+   */
+  LORAMAC_PARSER_ERROR,
+} LoRaMacParserStatus_t;
 
 /*!
  * Parse a serialized join-accept message and fills the structured object.
@@ -75,7 +72,8 @@ typedef enum eLoRaMacParserStatus
  * \param[IN/OUT] macMsg       - Join-accept message object
  * \retval                     - Status of the operation
  */
-LoRaMacParserStatus_t LoRaMacParserJoinAccept( LoRaMacMessageJoinAccept_t *macMsg );
+LoRaMacParserStatus_t
+LoRaMacParserJoinAccept(LoRaMacMessageJoinAccept_t *macMsg);
 
 /*!
  * Parse a serialized data message and fills the structured object.
@@ -83,7 +81,7 @@ LoRaMacParserStatus_t LoRaMacParserJoinAccept( LoRaMacMessageJoinAccept_t *macMs
  * \param[IN/OUT] macMsg       - Data message object
  * \retval                     - Status of the operation
  */
-LoRaMacParserStatus_t LoRaMacParserData( LoRaMacMessageData_t *macMsg );
+LoRaMacParserStatus_t LoRaMacParserData(LoRaMacMessageData_t *macMsg);
 
 /*! \} addtogroup LORAMAC */
 
@@ -92,4 +90,3 @@ LoRaMacParserStatus_t LoRaMacParserData( LoRaMacMessageData_t *macMsg );
 #endif
 
 #endif // __LORAMAC_PARSER_H__
-

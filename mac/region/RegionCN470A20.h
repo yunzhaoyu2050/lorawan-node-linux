@@ -38,7 +38,10 @@ extern "C"
 {
 #endif
 
+#include "lora-radio-config.h"
 #include "region/Region.h"
+
+#ifdef REGION_CN470
 
 /*!
  * The maximum number of channels.
@@ -221,7 +224,7 @@ uint32_t RegionCN470A20GetRx1Frequency( uint8_t channel );
 uint32_t RegionCN470A20GetRx2Frequency( uint8_t joinChannelIndex, bool isOtaaDevice );
 
 /*! \} defgroup REGIONCN470 */
-
+#endif
 #ifdef __cplusplus
 }
 #endif

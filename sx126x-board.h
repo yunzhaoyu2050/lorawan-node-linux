@@ -23,7 +23,7 @@
 #ifndef __SX126x_BOARD_H__
 #define __SX126x_BOARD_H__
 
-#include "lora-radio-rtos-config.h"
+#include "lora-radio-config.h"
 #include "sx126x.h"
 #include "utiles.h"
 #include <stdbool.h>

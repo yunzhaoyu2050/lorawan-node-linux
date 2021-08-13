@@ -37,9 +37,12 @@
 #ifndef __LORAMACADR_H__
 #define __LORAMACADR_H__
 
+#include <stdbool.h>
+#include <stdint.h>
+#include "LoRaMac.h"
+
 #ifdef __cplusplus
-extern "C"
-{
+extern "C" {
 #endif
 
 /*! \} defgroup LORAMACADR */
@@ -47,49 +50,48 @@ extern "C"
 /*
  * Parameter structure for the function CalcNextAdr.
  */
-typedef struct sCalcNextAdrParams
-{
-    /*!
-     * Set to true, if the function should update the channels mask.
-     */
-    bool UpdateChanMask;
-    /*!
-     * Set to true, if ADR is enabled.
-     */
-    bool AdrEnabled;
-    /*!
-     * ADR ack counter.
-     */
-    uint32_t AdrAckCounter;
-    /*!
-     * ADR Ack limit
-     */
-    uint16_t AdrAckLimit;
-    /*!
-     * ADR Ack delay
-     */
-    uint16_t AdrAckDelay;
-    /*!
-     * Datarate used currently.
-     */
-    int8_t Datarate;
-    /*!
-     * TX power used currently.
-     */
-    int8_t TxPower;
-    /*!
-     * NbTrans counter used currently.
-     */
-    uint8_t NbTrans;
-    /*!
-     * UplinkDwellTime
-     */
-    uint8_t UplinkDwellTime;
-    /*!
-     * Region
-     */
-    LoRaMacRegion_t Region;
-}CalcNextAdrParams_t;
+typedef struct sCalcNextAdrParams {
+  /*!
+   * Set to true, if the function should update the channels mask.
+   */
+  bool UpdateChanMask;
+  /*!
+   * Set to true, if ADR is enabled.
+   */
+  bool AdrEnabled;
+  /*!
+   * ADR ack counter.
+   */
+  uint32_t AdrAckCounter;
+  /*!
+   * ADR Ack limit
+   */
+  uint16_t AdrAckLimit;
+  /*!
+   * ADR Ack delay
+   */
+  uint16_t AdrAckDelay;
+  /*!
+   * Datarate used currently.
+   */
+  int8_t Datarate;
+  /*!
+   * TX power used currently.
+   */
+  int8_t TxPower;
+  /*!
+   * NbTrans counter used currently.
+   */
+  uint8_t NbTrans;
+  /*!
+   * UplinkDwellTime
+   */
+  uint8_t UplinkDwellTime;
+  /*!
+   * Region
+   */
+  LoRaMacRegion_t Region;
+} CalcNextAdrParams_t;
 
 /*!
  * \brief Calculates the next datarate to set, when ADR is on or off.
@@ -116,8 +118,9 @@ typedef struct sCalcNextAdrParams
  *
  * \retval Returns true, if an ADR request should be performed.
  */
-bool LoRaMacAdrCalcNext( CalcNextAdrParams_t* adrNext, int8_t* drOut, int8_t* txPowOut,
-                         uint8_t* nbTransOut, uint32_t* adrAckCounter );
+bool LoRaMacAdrCalcNext(CalcNextAdrParams_t *adrNext, int8_t *drOut,
+                        int8_t *txPowOut, uint8_t *nbTransOut,
+                        uint32_t *adrAckCounter);
 
 #ifdef __cplusplus
 }

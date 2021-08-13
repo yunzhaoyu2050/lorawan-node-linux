@@ -32,6 +32,8 @@
 #include "RegionCommon.h"
 #include "RegionAS923.h"
 
+#ifdef REGION_AS923
+
 // Definitions
 #define CHANNELS_MASK_SIZE                1
 
@@ -1052,3 +1054,4 @@ void RegionAS923RxBeaconSetup( RxBeaconSetup_t* rxBeaconSetup, uint8_t* outDr )
     // Store downlink datarate
     *outDr = AS923_BEACON_CHANNEL_DR;
 }
+#endif

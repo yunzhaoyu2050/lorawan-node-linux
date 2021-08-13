@@ -33,25 +33,27 @@ int SX126xReadCommand(RadioCommands_t opcode, uint8_t *buffer, uint16_t size);
 /*!
  * \brief Write a single byte of data to the radio memory
  *
- * \param [in]  address       The address of the first byte to write in the radio
- * \param [in]  value         The data to be written in radio's memory
+ * \param [in]  address       The address of the first byte to write in the
+ * radio \param [in]  value         The data to be written in radio's memory
  */
 int SX126xWriteRegister(uint16_t address, uint8_t value);
 
 /*!
  * \brief Read a single byte of data from the radio memory
  *
- * \param [in]  address       The address of the first byte to write in the radio
+ * \param [in]  address       The address of the first byte to write in the
+ * radio
  *
- * \retval      value         The value of the byte at the given address in radio's memory
+ * \retval      value         The value of the byte at the given address in
+ * radio's memory
  */
 int SX126xReadRegister(uint16_t address);
 
 /*!
  * \brief Write data to the radio memory
  *
- * \param [in]  address       The address of the first byte to write in the radio
- * \param [in]  buffer        The data to be written in radio's memory
+ * \param [in]  address       The address of the first byte to write in the
+ * radio \param [in]  buffer        The data to be written in radio's memory
  * \param [in]  size          The number of bytes to write in radio's memory
  */
 int SX126xWriteRegisters(uint16_t address, uint8_t *buffer, uint16_t size);
@@ -59,8 +61,8 @@ int SX126xWriteRegisters(uint16_t address, uint8_t *buffer, uint16_t size);
 /*!
  * \brief Read data from the radio memory
  *
- * \param [in]  address       The address of the first byte to read from the radio
- * \param [out] buffer        The buffer that holds data read from radio
+ * \param [in]  address       The address of the first byte to read from the
+ * radio \param [out] buffer        The buffer that holds data read from radio
  * \param [in]  size          The number of bytes to read from radio's memory
  */
 int SX126xReadRegisters(uint16_t address, uint8_t *buffer, uint16_t size);
@@ -78,8 +80,8 @@ int SX126xWriteBuffer(uint8_t offset, uint8_t *buffer, uint8_t size);
  * \brief Read data from the buffer holding the payload in the radio
  *
  * \param [in]  offset        The offset to start reading the payload
- * \param [out] buffer        A pointer to a buffer holding the data from the radio
- * \param [in]  size          The number of byte to be read
+ * \param [out] buffer        A pointer to a buffer holding the data from the
+ * radio \param [in]  size          The number of byte to be read
  */
 int SX126xReadBuffer(uint8_t offset, uint8_t *buffer, uint8_t size);
 

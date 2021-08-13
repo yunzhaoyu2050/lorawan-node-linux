@@ -32,6 +32,8 @@
 #include "RegionBaseUS.h"
 #include "RegionCN470A20.h"
 
+#ifdef REGION_CN470
+
 uint32_t RegionCN470A20GetDownlinkFrequency( uint8_t channel, uint8_t joinChannelIndex, bool isPingSlot )
 {
     return RegionCN470A20GetRx1Frequency( channel );
@@ -155,4 +157,4 @@ uint32_t RegionCN470A20GetRx2Frequency( uint8_t joinChannelIndex, bool isOtaaDev
     // ABP device
     return CN470_A20_RX_WND_2_FREQ_ABP;
 }
-
+#endif

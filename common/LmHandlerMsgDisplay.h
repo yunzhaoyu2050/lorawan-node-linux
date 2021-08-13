@@ -22,8 +22,8 @@
 #ifndef __LMHANDLER_MSG_DISPLAY_H__
 #define __LMHANDLER_MSG_DISPLAY_H__
 
-#include "utilities.h"
 #include "LmHandler.h"
+#include "utilities.h"
 
 /*!
  * \brief Displays NVM context operation state
@@ -33,14 +33,14 @@
  *
  * \param [IN] size Number of data bytes which were stored or restored.
  */
-void DisplayNvmDataChange( LmHandlerNvmContextStates_t state, uint16_t size );
+void DisplayNvmDataChange(LmHandlerNvmContextStates_t state, uint16_t size);
 
 /*!
  * \brief Displays updated network parameters
  *
  * \param [IN] commissioningParams Commissioning provided parameters
  */
-void DisplayNetworkParametersUpdate( CommissioningParams_t* commissioningParams );
+void DisplayNetworkParametersUpdate(CommissioningParams_t *commissioningParams);
 
 /*!
  * \brief Displays updated McpsRequest
@@ -49,7 +49,8 @@ void DisplayNetworkParametersUpdate( CommissioningParams_t* commissioningParams 
  * \param [IN] mcpsReq McpsRequest command executed
  * \param [IN] nextTxIn Time to wait for the next uplink transmission
  */
-void DisplayMacMcpsRequestUpdate( LoRaMacStatus_t status, McpsReq_t *mcpsReq, TimerTime_t nextTxIn );
+void DisplayMacMcpsRequestUpdate(LoRaMacStatus_t status, McpsReq_t *mcpsReq,
+                                 TimerTime_t nextTxIn);
 
 /*!
  * \brief Displays updated MlmeRequest
@@ -58,21 +59,22 @@ void DisplayMacMcpsRequestUpdate( LoRaMacStatus_t status, McpsReq_t *mcpsReq, Ti
  * \param [IN] mlmeReq MlmeRequest command executed
  * \param [IN] nextTxIn Time to wait for the next uplink transmission
  */
-void DisplayMacMlmeRequestUpdate( LoRaMacStatus_t status, MlmeReq_t *mlmeReq, TimerTime_t nextTxIn );
+void DisplayMacMlmeRequestUpdate(LoRaMacStatus_t status, MlmeReq_t *mlmeReq,
+                                 TimerTime_t nextTxIn);
 
 /*!
  * \brief Displays updated JoinRequest
  *
  * \param [IN] params Executed JoinRequest parameters
  */
-void DisplayJoinRequestUpdate( LmHandlerJoinParams_t* params );
+void DisplayJoinRequestUpdate(LmHandlerJoinParams_t *params);
 
 /*!
  * \brief Displays Tx params
  *
  * \param [IN] params Tx parameters
  */
-void DisplayTxUpdate( LmHandlerTxParams_t* params );
+void DisplayTxUpdate(LmHandlerTxParams_t *params);
 
 /*!
  * \brief Displays Rx params
@@ -80,25 +82,26 @@ void DisplayTxUpdate( LmHandlerTxParams_t* params );
  * \param [IN] appData Receive data payload and port number
  * \param [IN] params Rx parameters
  */
-void DisplayRxUpdate( LmHandlerAppData_t* appData, LmHandlerRxParams_t* params );
+void DisplayRxUpdate(LmHandlerAppData_t *appData, LmHandlerRxParams_t *params);
 
 /*!
  * \brief Displays beacon status update
  *
  * \param [IN] params Beacon parameters
  */
-void DisplayBeaconUpdate( LoRaMacHandlerBeaconParams_t* params );
+void DisplayBeaconUpdate(LoRaMacHandlerBeaconParams_t *params);
 
 /*!
  * \brief Displays end-device class update
  *
  * \param [IN] deviceClass Current end-device class
  */
-void DisplayClassUpdate( DeviceClass_t deviceClass );
+void DisplayClassUpdate(DeviceClass_t deviceClass);
 
 /*!
  * \brief Displays application information
  */
-void DisplayAppInfo( const char* appName, const Version_t* appVersion, const Version_t* gitHubVersion );
+void DisplayAppInfo(const char *appName, const Version_t *appVersion,
+                    const Version_t *gitHubVersion);
 
 #endif // __LMHANDLER_MSG_DISPLAY_H__
