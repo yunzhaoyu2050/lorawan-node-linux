@@ -777,6 +777,7 @@ bool RegionCN470TxConfig( TxConfigParams_t* txConfig, int8_t* txPower, TimerTime
 
     // Setup the radio frequency
     Radio.SetChannel( RegionNvmGroup2->Channels[txConfig->Channel].Frequency );
+    printf("Set Channel: %u(Hz)\r\n", RegionNvmGroup2->Channels[txConfig->Channel].Frequency);
 
     if( txConfig->Datarate == DR_7 )
     { // High Speed FSK channel

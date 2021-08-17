@@ -141,10 +141,10 @@ SecureElementStatus_t SecureElementInit(SecureElementNvmData_t *nvm) {
 
   // Initialize nvm pointer
   SeNvm = nvm;
-
+  
   // Initialize data
   memcpy1((uint8_t *)SeNvm, (uint8_t *)&seNvmInit, sizeof(seNvmInit));
-	
+
 #if !defined(SECURE_ELEMENT_PRE_PROVISIONED)
 #if (STATIC_DEVICE_EUI == 0)
   // Get a DevEUI from MCU unique ID

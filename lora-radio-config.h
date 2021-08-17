@@ -18,6 +18,6 @@
 // #define REGION_KR920 // - Enables support for the Region IN865 (Default OFF)
 // #define REGION_IN865 // - Enables support for the Region AS923 (Default OFF)
 // #define REGION_RU864 // - Enables support for the Region RU864 (Default OFF)
-// #define RADIO
+#define LORAMAC_CLASSB_ENABLED
 #define SOFT_SE
 #endif // end of __LORA_RADIO_CONFIG_H_

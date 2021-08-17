@@ -40,6 +40,7 @@ uint16_t NvmmWrite(uint8_t *src, uint16_t size, uint16_t offset) {
   int ret = lseek(nvmm_fd, offset, SEEK_SET);
   if (ret < 0)
     return 0;
+  printf("NvmmWrite:%s, %d\r\n", src, size);
   ret = write(nvmm_fd, src, size);
   if (ret < 0)
     return 0;

@@ -30,6 +30,8 @@ Jaeckle ( STACKFORCE )
 #include "utilities.h"
 #include <math.h>
 
+#include "lora-radio-timer.h"
+
 #ifdef LORAMAC_CLASSB_ENABLED
 
 /*

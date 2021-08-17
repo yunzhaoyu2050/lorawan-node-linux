@@ -2,6 +2,8 @@
 #define __UTILES_H__
 #include <stdio.h>
 #include <time.h>
+#include "lora-radio-timer.h"
+
 void wait_ms(unsigned long a);
 void wait_us(unsigned long a);
 // inline int ts_diff(struct timespec *t1, struct timespec *t2) {
@@ -15,4 +17,5 @@ int ts_diff(struct timespec *t1, struct timespec *t2);
 //   ttmp->tv_nsec = (t1->tv_nsec - t2->tv_nsec);
 //   return 0;
 // }
+TimerTime_t RtcTempCompensation(TimerTime_t period, float temperature);
 #endif // __UTILES_H__

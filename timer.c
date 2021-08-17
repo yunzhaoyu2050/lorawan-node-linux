@@ -30,7 +30,7 @@ void timer_init(struct Timer *handle, void (*timeout_cb)(void *arg),
   // memset(handle, sizeof(struct Timer), 0);
   handle->timeout_cb = timeout_cb;
   handle->cur_ticks = _timer_ticks;
-  handle->cur_expired_time = handle->timeout;
+  // handle->cur_expired_time = handle->timeout;
   handle->arg = arg;
   // printf("cur_ticks: %u, cur_expired_time: %u, _timer_ticks: %u, timeout:
   // %u\r\n",
@@ -73,6 +73,8 @@ int timer_set_value(struct Timer *handle, uint32_t timeout, uint32_t repeat) {
     if (target == handle) {
       target->timeout = timeout;
       target->repeat = repeat;
+      handle->cur_expired_time = target->timeout;
+      handle->enable = true;
       return 0; // already exist.
     }
     target = target->next;
@@ -134,13 +136,17 @@ void timer_loop(void) {
       if (_timer_ticks - target->cur_ticks >= target->cur_expired_time) {
         // printf("cur_ticks: %u, cur_expired_time: %u, _timer_ticks: %u\r\n",
         //        target->cur_ticks, target->cur_expired_time, _timer_ticks);
+        uint32_t exp_time = target->cur_expired_time;
         if (target->repeat == 0) {
           timer_stop(target);
+          continue;
         } else {
           target->cur_ticks = _timer_ticks;
           target->cur_expired_time = target->repeat;
         }
-        target->timeout_cb(target->arg);
+        if (exp_time != 0) {
+          target->timeout_cb(target->arg);
+        }
       }
     }
   }

@@ -21,11 +21,8 @@
 
 /*! \file fuota-test-01/NucleoL152/main.c */
 
-#include "lora-radio-config.h"
+#include "main.h"
 #include "./common/githubVersion.h"
-#include "RegionCommon.h"
-#include "firmwareVersion.h"
-#include "gpio.h"
 #include "Commissioning.h"
 #include "LmHandler.h"
 #include "LmHandlerMsgDisplay.h"
@@ -33,12 +30,17 @@
 #include "LmhpCompliance.h"
 #include "LmhpFragmentation.h"
 #include "LmhpRemoteMcastSetup.h"
+#include "RegionCommon.h"
 #include "cli.h"
+#include "firmwareVersion.h"
+#include "gpio.h"
+#include "log.h"
+#include "lora-radio-config.h"
 #include "lora-spi-sx126x.h"
-#include "main.h"
 #include "radio.h"
 #include "sx126x-board.h"
 #include "timer.h"
+#include "utiles.h"
 #include "utilities.h"
 #include <fcntl.h>
 #include <getopt.h>
@@ -50,8 +52,6 @@
 #include <sys/time.h>
 #include <time.h>
 #include <unistd.h>
-#include "utiles.h"
-#include "log.h"
 
 int g_cfgLogLevel = DEBUG;
 char log_file_name[32] = "/var/log/lorawan_macnode/runlog";
@@ -358,6 +358,7 @@ radiodev_t radiodev;
 int main(int argc, char *argv[]) {
   parse_opts(argc, argv);
 
+  // for test
   LORA_RADIO_DIO1_PIN = 79;
   LORA_RADIO_RESET_PIN = 0;
   LORA_RADIO_BUSY_PIN = 76;
@@ -425,6 +426,17 @@ int main(int argc, char *argv[]) {
   LmHandlerPackageRegister(PACKAGE_ID_CLOCK_SYNC, NULL);
   LmHandlerPackageRegister(PACKAGE_ID_REMOTE_MCAST_SETUP, NULL);
   LmHandlerPackageRegister(PACKAGE_ID_FRAGMENTATION, &FragmentationParams);
+  
+  // time_t lastTime = 0;
+  struct timespec last_ts = {0};
+  struct timespec now_ts = {0};
+  clock_gettime(CLOCK_MONOTONIC, &now_ts);
+  last_ts = now_ts;
+  
+  struct timeval timeout = {0};
+  timeout.tv_sec = 0;
+  timeout.tv_usec = g_loop_tv; // 10ms loop
+  log(INFO, "main dispatch process, timeout(%dus).", g_loop_tv);
 
   IsClockSynched = false;
   IsFileTransferDone = false;
@@ -432,16 +444,6 @@ int main(int argc, char *argv[]) {
   LmHandlerJoin();
 
   StartTxProcess(LORAMAC_HANDLER_TX_ON_TIMER);
-
-  // time_t lastTime = 0;
-  struct timespec last_ts = {0};
-  struct timespec now_ts = {0};
-  clock_gettime(CLOCK_MONOTONIC, &now_ts);
-  last_ts = now_ts;
-  struct timeval timeout = {0};
-  timeout.tv_sec = 0;
-  timeout.tv_usec = g_loop_tv; // 10ms loop
-  log(INFO, "main dispatch process, timeout(%dus).", g_loop_tv);
 
   int sums = 0;
   while (keep_running) {
@@ -452,7 +454,6 @@ int main(int argc, char *argv[]) {
       continue;
     } else if (ret == 0) {
       // timeout
-      printf("select timeout, (%d)(%d)\r\n", timeout.tv_usec, ret);
     } else {
       // dio1 irq
       if (FD_ISSET(dio1_fd, &fd_mask)) {
@@ -463,18 +464,16 @@ int main(int argc, char *argv[]) {
     memset(&now_ts, 0, sizeof(now_ts));
     clock_gettime(CLOCK_MONOTONIC, &now_ts);
     int tms = ts_diff(&now_ts, &last_ts);
-    // printf("ts_diff, tms:%d, ret:%d, now_ts.tv_sec:%d, now_ts.tv_nsec:%d.\r\n", tms, ret, now_ts.tv_sec, now_ts.tv_nsec);
     // TODO: check 100ms is on timer process
     if (tms >= 10 && tms < 100) {
-      // printf("10ms loop check, (%d)\r\n", tms);
       // timer.h -> #define CFG_TIMER_1_TICK_N_MS   10
       timer_ticks(); // 10ms, 1 tick
       timer_loop();  // 10ms loop check
       sums += tms;
       last_ts = now_ts;
     }
-    if (sums >= 100) { // 100 ms process
-      printf("100 ms process, (%d)(%d)\r\n", tms, sums);
+    if (sums >= 5000) { // 5000 ms process
+      printf("5000 ms process, (%d)(%d)\r\n", tms, sums);
       // Process characters sent over the command line interface
       // CliProcess(&Uart2);
       // Processes the LoRaMac events
@@ -488,7 +487,7 @@ int main(int argc, char *argv[]) {
       } else {
         // The MCU wakes up through events
         // BoardLowPowerHandler();
-        printf("BoardLowPowerHandler->");
+        printf("BoardLowPowerHandler->\r\n");
       }
       CRITICAL_SECTION_END();
       sums = 0;

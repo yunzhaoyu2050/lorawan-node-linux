@@ -2,6 +2,8 @@
 #include "lora-radio-config.h"
 #include <stdint.h>
 
+#include "utiles.h"
+
 TimerTime_t TimerGetCurrentTime(void) {
   struct timespec tn = {0};
   clock_gettime(CLOCK_MONOTONIC, &tn);
@@ -10,4 +12,8 @@ TimerTime_t TimerGetCurrentTime(void) {
 
 TimerTime_t TimerGetElapsedTime(TimerTime_t past) {
   return (TimerGetCurrentTime() - past);
+}
+
+TimerTime_t TimerTempCompensation(TimerTime_t period, float temperature) {
+  return RtcTempCompensation(period, temperature);
 }
