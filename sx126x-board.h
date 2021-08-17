@@ -88,7 +88,19 @@ extern int LORA_RADIO_RFSW2_PIN;
 /*!
  * Defines the time required for the TCXO to wakeup [ms].
  */
-#define BOARD_TCXO_WAKEUP_TIME 2
+// #define BOARD_TCXO_WAKEUP_TIME 2
+
+#if defined(CONFIG_LORA_RADIO_USE_TCXO) || defined(LORA_RADIO_USE_TCXO)
+/*!
+ * Radio complete Wake-up Time with TCXO stabilisation time
+ */
+#define BOARD_TCXO_WAKEUP_TIME 5 // [ms]
+#else
+/*!
+ * Radio complete Wake-up Time with TCXO stabilisation time
+ */
+#define BOARD_TCXO_WAKEUP_TIME 0 // No Used
+#endif
 
 #define SX126X_DELAY_MS(ms) wait_ms(ms) // rt_thread_mdelay(ms)
 #define SX126X_BLOCK_DELAY_1MS() wait_ms(1) // rt_hw_us_delay(999)

@@ -29,6 +29,8 @@
 #include "sx126x-board.h"
 #include <string.h>
 
+#include "log.h"
+
 /*!
  * \brief Radio registers definition
  */
@@ -93,17 +95,20 @@ void SX126xInit(DioIrqHandler *dioIrq) {
 
   SX126xWakeup();
   SX126xSetStandby(STDBY_RC);
-
+  log(INFO, "SX126xSetStandby success.");
 #ifdef LORA_RADIO_USE_TCXO
   // Initialize TCXO control
   SX126xIoTcxoInit();
+  log(INFO, "SX126xIoTcxoInit success.");
 #endif
 
 #ifdef LORA_RADIO_USE_DIO2_AS_RF_SWITCH_CTRL
   SX126xSetDio2AsRfSwitchCtrl(true);
+  log(INFO, "SX126xSetDio2AsRfSwitchCtrl success.");
 #endif
 
   SX126xSetOperatingMode(MODE_STDBY_RC);
+  log(INFO, "SX126xInit success.");
 }
 
 RadioOperatingModes_t SX126xGetOperatingMode(void) { return OperatingMode; }
@@ -225,16 +230,17 @@ uint32_t SX126xGetRandom(void) {
   uint8_t regAnaMixer = 0;
 
   regAnaLna = SX126xReadRegister(REG_ANA_LNA);
+
   SX126xWriteRegister(REG_ANA_LNA, regAnaLna & ~(1 << 0));
 
   regAnaMixer = SX126xReadRegister(REG_ANA_MIXER);
   SX126xWriteRegister(REG_ANA_MIXER, regAnaMixer & ~(1 << 7));
-
+  log(INFO, "SX126xWriteRegister success.");
   // Set radio in continuous reception
   SX126xSetRx(0xFFFFFF); // Rx Continuous
-
+  log(INFO, "SX126xSetRx success.");
   SX126xReadRegisters(RANDOM_NUMBER_GENERATORBASEADDR, (uint8_t *)&number, 4);
-
+  log(INFO, "SX126xReadRegister success.");
   SX126xSetStandby(STDBY_RC);
 
   SX126xWriteRegister(REG_ANA_LNA, regAnaLna);
@@ -292,7 +298,7 @@ void SX126xSetRxBoosted(uint32_t timeout) {
   uint8_t buf[3];
 
   SX126xSetOperatingMode(MODE_RX);
-
+  
   SX126xWriteRegister(REG_RX_GAIN, 0x96); // max LNA gain, increase current by
                                           // ~2mA for around ~3dB in sensivity
 

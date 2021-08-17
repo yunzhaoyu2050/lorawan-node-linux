@@ -36,6 +36,7 @@
 #include <stdbool.h>
 #include <stdint.h>
 #include <stdlib.h>
+#include "log.h"
 
 #ifndef ACTIVE_REGION
 
@@ -251,7 +252,7 @@ LmHandlerErrorStatus_t LmHandlerInit(LmHandlerCallbacks_t *handlerCallbacks,
                             LmHandlerParams->Region) != LORAMAC_STATUS_OK) {
     return LORAMAC_HANDLER_ERROR;
   }
-
+  log(INFO, "LoRaMacInitialization init success.");
   // Restore data if required
   nbNvmData = NvmDataMgmtRestore();
 

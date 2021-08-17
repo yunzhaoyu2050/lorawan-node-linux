@@ -13,7 +13,7 @@ OBJSUBDIR := $(addprefix build/,$(SRCDIR))
 SRC = $(wildcard $(SRCCFILE))
 OBJS := $(patsubst %.c,$(OBJDIR)/%.o,$(SRC))
 
-CFLAGS += -Wall -g -std=gnu99 -pipe -mno-branch-likely -mips32r2 -mtune=24kec -mdsp -fno-caller-saves -fhonour-copts -Wno-error=unused-but-set-variable -Wno-error=unused-result -msoft-float
+CFLAGS += -Wall -g -std=gnu99 #-pipe -mno-branch-likely -mips32r2 -mtune=24kec -mdsp -fno-caller-saves -fhonour-copts -Wno-error=unused-but-set-variable -Wno-error=unused-result -msoft-float #  -std=gnu99
 CFLAGS += $(SRCHINCLUDE)
 LDFLAGS += -lm -lpthread -lrt
 

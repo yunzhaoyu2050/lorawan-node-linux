@@ -1,6 +1,5 @@
 #include "lora-radio-timer.h"
 #include "lora-radio-config.h"
-#include "utiles.h"
 #include <stdint.h>
 
 TimerTime_t TimerGetCurrentTime(void) {

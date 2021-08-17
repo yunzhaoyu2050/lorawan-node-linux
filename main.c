@@ -21,14 +21,11 @@
 
 /*! \file fuota-test-01/NucleoL152/main.c */
 
+#include "lora-radio-config.h"
 #include "./common/githubVersion.h"
 #include "RegionCommon.h"
-// #include "board.h"
 #include "firmwareVersion.h"
 #include "gpio.h"
-// #include "uart.h"
-#include "utilities.h"
-
 #include "Commissioning.h"
 #include "LmHandler.h"
 #include "LmHandlerMsgDisplay.h"
@@ -37,24 +34,27 @@
 #include "LmhpFragmentation.h"
 #include "LmhpRemoteMcastSetup.h"
 #include "cli.h"
-
+#include "lora-spi-sx126x.h"
+#include "main.h"
 #include "radio.h"
 #include "sx126x-board.h"
 #include "timer.h"
+#include "utilities.h"
 #include <fcntl.h>
 #include <getopt.h>
 #include <stdint.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 #include <sys/select.h>
 #include <sys/time.h>
 #include <time.h>
 #include <unistd.h>
-#include "main.h"
-#include <stdlib.h>
-#include "lora-radio-config.h"
-#include "lora-spi-sx126x.h"
+#include "utiles.h"
 #include "log.h"
+
+int g_cfgLogLevel = DEBUG;
+char log_file_name[32] = "/var/log/lorawan_macnode/runlog";
 
 #ifndef ACTIVE_REGION
 
@@ -314,7 +314,7 @@ static volatile uint32_t FileRxCrc = 0;
 // extern Uart_t Uart2;
 
 static const char *g_spi_device = "/dev/spidev1.1";
-static unsigned int g_loop_tv = 0;
+static unsigned int g_loop_tv = 10 * 1000;
 
 static void print_usage(const char *prog) {
   printf("Usage: %s [-dth]\n", prog);
@@ -341,7 +341,7 @@ static void parse_opts(int argc, char *argv[]) {
       g_spi_device = optarg;
       break;
     case 't':
-      g_loop_tv = atoi(optarg);
+      g_loop_tv = atoi(optarg) * 1000;
       break;
     default:
       print_usage(argv[0]);
@@ -357,6 +357,10 @@ radiodev_t radiodev;
  */
 int main(int argc, char *argv[]) {
   parse_opts(argc, argv);
+
+  LORA_RADIO_DIO1_PIN = 79;
+  LORA_RADIO_RESET_PIN = 0;
+  LORA_RADIO_BUSY_PIN = 76;
 
   radiodev.rst_gp = LORA_RADIO_RESET_PIN;
   radiodev.busy_gp = LORA_RADIO_BUSY_PIN;
@@ -374,6 +378,9 @@ int main(int argc, char *argv[]) {
   fd_set fd_mask;
   FD_ZERO(&fd_mask);
   // add dio1 gpio
+  gpio_export(radiodev.dio_gp[0]);
+  gpio_export(radiodev.busy_gp);
+  // gpio_export(radiodev.dio_gp[0]);
   int dio1_fd = gpio_fd_open(radiodev.dio_gp[0]);
   if (dio1_fd < 0) {
     log(ERROR, "dio1 gpio fd open failed.");
@@ -406,12 +413,14 @@ int main(int argc, char *argv[]) {
     while (1) {
     }
   }
+  log(INFO, "LmHandlerInit init success.");
 
   // Set system maximum tolerated rx error in milliseconds
   LmHandlerSetSystemMaxRxError(20);
 
   // The LoRa-Alliance Compliance protocol package should always be
-  // initialized and activated. LoRa-Alliance Compliance 协议包应始终初始化和激活
+  // initialized and activated. LoRa-Alliance Compliance
+  // 协议包应始终初始化和激活
   LmHandlerPackageRegister(PACKAGE_ID_COMPLIANCE, &LmhpComplianceParams);
   LmHandlerPackageRegister(PACKAGE_ID_CLOCK_SYNC, NULL);
   LmHandlerPackageRegister(PACKAGE_ID_REMOTE_MCAST_SETUP, NULL);
@@ -427,10 +436,14 @@ int main(int argc, char *argv[]) {
   // time_t lastTime = 0;
   struct timespec last_ts = {0};
   struct timespec now_ts = {0};
-
+  clock_gettime(CLOCK_MONOTONIC, &now_ts);
+  last_ts = now_ts;
   struct timeval timeout = {0};
   timeout.tv_sec = 0;
   timeout.tv_usec = g_loop_tv; // 10ms loop
+  log(INFO, "main dispatch process, timeout(%dus).", g_loop_tv);
+
+  int sums = 0;
   while (keep_running) {
     int ret = select(max_fd + 1, &fd_mask, NULL, NULL, &timeout);
     if (ret < 0) {
@@ -439,6 +452,7 @@ int main(int argc, char *argv[]) {
       continue;
     } else if (ret == 0) {
       // timeout
+      printf("select timeout, (%d)(%d)\r\n", timeout.tv_usec, ret);
     } else {
       // dio1 irq
       if (FD_ISSET(dio1_fd, &fd_mask)) {
@@ -446,16 +460,21 @@ int main(int argc, char *argv[]) {
         radiodev.dio1_callBack(NULL);
       }
     }
+    memset(&now_ts, 0, sizeof(now_ts));
     clock_gettime(CLOCK_MONOTONIC, &now_ts);
-    int sums = 0;
     int tms = ts_diff(&now_ts, &last_ts);
+    // printf("ts_diff, tms:%d, ret:%d, now_ts.tv_sec:%d, now_ts.tv_nsec:%d.\r\n", tms, ret, now_ts.tv_sec, now_ts.tv_nsec);
     // TODO: check 100ms is on timer process
     if (tms >= 10 && tms < 100) {
+      // printf("10ms loop check, (%d)\r\n", tms);
       // timer.h -> #define CFG_TIMER_1_TICK_N_MS   10
       timer_ticks(); // 10ms, 1 tick
       timer_loop();  // 10ms loop check
       sums += tms;
-    } else if (sums >= 100) { // 100 ms process
+      last_ts = now_ts;
+    }
+    if (sums >= 100) { // 100 ms process
+      printf("100 ms process, (%d)(%d)\r\n", tms, sums);
       // Process characters sent over the command line interface
       // CliProcess(&Uart2);
       // Processes the LoRaMac events
@@ -469,16 +488,16 @@ int main(int argc, char *argv[]) {
       } else {
         // The MCU wakes up through events
         // BoardLowPowerHandler();
+        printf("BoardLowPowerHandler->");
       }
       CRITICAL_SECTION_END();
       sums = 0;
     }
-    last_ts = now_ts;
   }
   close(dio1_fd);
   close(radiodev.spidev_pt);
   return 0;
-// exit2:
+  // exit2:
   close(dio1_fd);
 exit1:
   close(radiodev.spidev_pt);

@@ -63,7 +63,7 @@ int SX126xWriteCommand(RadioCommands_t command, uint8_t *buffer,
   if (command != RADIO_SET_SLEEP)
     SX126xWaitOnBusy();
   /* determine return code */
-  if (a != (int)k.len) {
+  if (a != (int)k.len) {    
     log(ERROR, "SX126xWriteCommand failed\n");
     return -1;
   } else {

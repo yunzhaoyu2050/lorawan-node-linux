@@ -48,6 +48,8 @@
 
 #include "LoRaMac.h"
 
+#include "log.h"
+
 #ifndef LORAMAC_VERSION
 /*!
  * LoRaWAN version definition.
@@ -3590,36 +3592,41 @@ LoRaMacStatus_t LoRaMacInitialization(LoRaMacPrimitives_t *primitives,
   MacCtx.RadioEvents.TxTimeout = OnRadioTxTimeout;
   MacCtx.RadioEvents.RxTimeout = OnRadioRxTimeout;
   Radio.Init(&MacCtx.RadioEvents);
-
+  log(INFO, "Radio.Init success.");
   // Initialize the Secure Element driver
   if (SecureElementInit(&Nvm.SecureElement) != SECURE_ELEMENT_SUCCESS) {
     return LORAMAC_STATUS_CRYPTO_ERROR;
   }
+  log(INFO, "SecureElementInit success.");
 
   // Initialize Crypto module
   if (LoRaMacCryptoInit(&Nvm.Crypto) != LORAMAC_CRYPTO_SUCCESS) {
     return LORAMAC_STATUS_CRYPTO_ERROR;
   }
+  log(INFO, "LoRaMacCryptoInit success.");
 
   // Initialize MAC commands module
   if (LoRaMacCommandsInit() != LORAMAC_COMMANDS_SUCCESS) {
     return LORAMAC_STATUS_MAC_COMMAD_ERROR;
   }
+  log(INFO, "LoRaMacCommandsInit success.");
 
   // Set multicast downlink counter reference
   if (LoRaMacCryptoSetMulticastReference(Nvm.MacGroup2.MulticastChannelList) !=
       LORAMAC_CRYPTO_SUCCESS) {
     return LORAMAC_STATUS_CRYPTO_ERROR;
   }
+  log(INFO, "LoRaMacCryptoSetMulticastReference success.");
 
   // Random seed initialization
   srand1(Radio.Random());
+  log(INFO, "srand1 success.");
 
   Radio.SetPublicNetwork(Nvm.MacGroup2.PublicNetwork);
   Radio.Sleep();
 
   LoRaMacEnableRequests(LORAMAC_REQUEST_HANDLING_ON);
-
+  log(INFO, "StopRetransmission success.");
   return LORAMAC_STATUS_OK;
 }
 

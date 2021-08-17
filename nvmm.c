@@ -70,6 +70,7 @@ uint16_t NvmmRead(uint8_t *dest, uint16_t size, uint16_t offset) {
 }
 
 bool NvmmCrc32Check(uint16_t size, uint16_t offset) {
+  uint16_t i;
   uint8_t data = 0;
   uint32_t calculatedCrc32 = 0;
   uint32_t readCrc32 = 0;
@@ -78,7 +79,7 @@ bool NvmmCrc32Check(uint16_t size, uint16_t offset) {
                (offset + (size - sizeof(readCrc32)))) == sizeof(readCrc32)) {
     // Calculate crc
     calculatedCrc32 = Crc32Init();
-    for (uint16_t i = 0; i < (size - sizeof(readCrc32)); i++) {
+    for (i = 0; i < (size - sizeof(readCrc32)); i++) {
       if (NvmmRead(&data, 1, offset + i) != 1) {
         return false;
       }

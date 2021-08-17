@@ -14,9 +14,10 @@
 // #define REGION_EU433 // - Enables support for the Region EU433 (Default OFF)
 // #define REGION_AU915 // - Enables support for the Region AU915 (Default OFF)
 // #define REGION_AS923 // - Enables support for the Region AS923 (Default OFF)
-// #define REGION_CN470 "ON" // - Enables support for the Region CN470 (Default OFF)
+#define REGION_CN470 "ON" // - Enables support for the Region CN470 (Default OFF)
 // #define REGION_KR920 // - Enables support for the Region IN865 (Default OFF)
 // #define REGION_IN865 // - Enables support for the Region AS923 (Default OFF)
 // #define REGION_RU864 // - Enables support for the Region RU864 (Default OFF)
 // #define RADIO
+#define SOFT_SE
 #endif // end of __LORA_RADIO_CONFIG_H_

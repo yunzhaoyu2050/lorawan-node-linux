@@ -89,14 +89,19 @@ void SX126xIoTcxoInit(void) {
 
   // +clear OSC_START_ERR for reboot or cold-start from sleep
   SX126xClearDeviceErrors();
-
+  log(INFO, "SX126xClearDeviceErrors success.");
   // TCXO_CTRL_1_7V -> TCXO_CTRL_2_7V 64*15.0625US
+  /*
   SX126xSetDio3AsTcxoCtrl(TCXO_CTRL_2_7V,
                           320); // SX126xGetBoardTcxoWakeupTime( ) << 6 ); //
   // convert from ms to SX126x time base
-
-  calibParam.Value = 0x7F;
-  SX126xCalibrate(calibParam);
+  */
+  // TCXO_CTRL_1_7V -> TCXO_CTRL_2_7V 64*15.0625US
+  SX126xSetDio3AsTcxoCtrl(TCXO_CTRL_1_7V, SX126xGetBoardTcxoWakeupTime() << 6);
+  log(INFO, "SX126xSetDio3AsTcxoCtrl success.");
+  // calibParam.Value = 0x7F;
+  // SX126xCalibrate(calibParam);
+  log(INFO, "SX126xCalibrate success.");
 }
 
 uint32_t SX126xGetBoardTcxoWakeupTime(void) { return BOARD_TCXO_WAKEUP_TIME; }
@@ -107,17 +112,19 @@ void SX126xReset(void) {
   wait_ms(20);
   gpio_set_value(LORA_RADIO_RESET_PIN, 1);
   wait_ms(10);
+  log(INFO, "and trun up...");
 }
 
 void SX126xWaitOnBusy(void) {
   unsigned int val = 0;
   gpio_get_value(LORA_RADIO_BUSY_PIN, &val);
+  int i = 0;
   while (val == 1) {
-    int i = 0;
-    if (i >= 200000) {
+    if (i >= 0xffffffff) {
       log(DEBUG, "[sx126x] SX126xWaitOnBusy failed.\n");
       return;
     }
+    // printf("%d", i);
     i++;
   }
   return;

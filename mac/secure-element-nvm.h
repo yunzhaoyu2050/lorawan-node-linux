@@ -40,7 +40,8 @@ extern "C" {
 
 #include "LoRaMacTypes.h"
 #include <stdint.h>
-
+// #include "lora-radio-config.h"
+#define SOFT_SE
 /*!
  * Secure-element keys size in bytes
  */
