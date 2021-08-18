@@ -27,18 +27,13 @@ static uint32_t _timer_ticks = 0;
  */
 void timer_init(struct Timer *handle, void (*timeout_cb)(void *arg),
                 void *arg) {
-  // memset(handle, sizeof(struct Timer), 0);
   handle->timeout_cb = timeout_cb;
   handle->cur_ticks = _timer_ticks;
-  // handle->cur_expired_time = handle->timeout;
   handle->arg = arg;
-  // printf("cur_ticks: %u, cur_expired_time: %u, _timer_ticks: %u, timeout:
-  // %u\r\n",
-  //  handle->cur_ticks, handle->cur_expired_time, _timer_ticks, timeout);
   struct Timer *target = head_handle;
   while (target) {
     if (target == handle) {
-      return; // already exist.
+      return;
     }
     target = target->next;
   }
@@ -54,28 +49,19 @@ void timer_init(struct Timer *handle, void (*timeout_cb)(void *arg),
  * @retval 0: succeed. -1: already exist.
  */
 int timer_start(struct Timer *handle) {
-  // struct Timer *target = head_handle;
-  // while (target) {
-  //   if (target == handle) {
-  //     return -1; // already exist.
-  //   }
-  //   target = target->next;
-  // }
-  // handle->next = head_handle;
-  // head_handle = handle;
   handle->enable = true;
   return 0;
 }
 
 int timer_set_value(struct Timer *handle, uint32_t timeout, uint32_t repeat) {
   struct Timer *target = head_handle;
+  // handle->enable = true;
   while (target) {
     if (target == handle) {
       target->timeout = timeout;
       target->repeat = repeat;
       handle->cur_expired_time = target->timeout;
-      handle->enable = true;
-      return 0; // already exist.
+      return 0;
     }
     target = target->next;
   }
@@ -88,18 +74,6 @@ int timer_set_value(struct Timer *handle, uint32_t timeout, uint32_t repeat) {
  * @retval 0: succeed. -1: timer not exist.
  */
 int timer_stop(struct Timer *handle) {
-  // struct Timer **curr;
-
-  // for (curr = &head_handle; *curr;) {
-  //   struct Timer *entry = *curr;
-  //   if (entry == handle) {
-  //     *curr = entry->next;
-  //     // free(entry);
-  //     return 0; // found specified timer
-  //   } else {
-  //     curr = &entry->next;
-  //   }
-  // }
   handle->enable = false;
   return 0;
 }
@@ -134,8 +108,6 @@ void timer_loop(void) {
       https://blog.csdn.net/szullc/article/details/115332326
       */
       if (_timer_ticks - target->cur_ticks >= target->cur_expired_time) {
-        // printf("cur_ticks: %u, cur_expired_time: %u, _timer_ticks: %u\r\n",
-        //        target->cur_ticks, target->cur_expired_time, _timer_ticks);
         uint32_t exp_time = target->cur_expired_time;
         if (target->repeat == 0) {
           timer_stop(target);

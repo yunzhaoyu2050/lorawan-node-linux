@@ -8,6 +8,8 @@ typedef struct {
   int busy_gp;
   int rst_gp; // reset gpio
   int dio_gp[3];
+  int rfsw1_gp;
+  int rfsw2_gp;
   DioIrqHandler *dio1_callBack;
   DioIrqHandler *dio2_callBack;
   DioIrqHandler *dio3_callBack;

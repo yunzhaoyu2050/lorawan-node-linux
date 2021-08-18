@@ -3413,7 +3413,6 @@ static uint8_t IsRequestPending(void) {
   return 0;
 }
 
-// 初始化参数 -> mac层初始化-> radio层初始化
 LoRaMacStatus_t LoRaMacInitialization(LoRaMacPrimitives_t *primitives,
                                       LoRaMacCallback_t *callbacks,
                                       LoRaMacRegion_t region) {
@@ -3440,9 +3439,9 @@ LoRaMacStatus_t LoRaMacInitialization(LoRaMacPrimitives_t *primitives,
 
   // Initialize the module context with zeros
   memset1((uint8_t *)&Nvm, 0x00,
-          sizeof(LoRaMacNvmData_t)); // 需要存储的lorawan mac数据
+          sizeof(LoRaMacNvmData_t));
   memset1((uint8_t *)&MacCtx, 0x00,
-          sizeof(LoRaMacCtx_t)); // lorawan mac要发送的数据结构
+          sizeof(LoRaMacCtx_t));
 
   // Set non zero variables to its default value
   Nvm.MacGroup2.Region = region;
@@ -3456,7 +3455,7 @@ LoRaMacStatus_t LoRaMacInitialization(LoRaMacPrimitives_t *primitives,
   params.NvmGroup1 = &Nvm.RegionGroup1;
   params.NvmGroup2 = &Nvm.RegionGroup2;
   params.Bands = &RegionBands;
-  RegionInitDefaults(Nvm.MacGroup2.Region, &params); // 初始化区域默认参数信息
+  RegionInitDefaults(Nvm.MacGroup2.Region, &params);
 
   // Reset to defaults
   getPhy.Attribute = PHY_DUTY_CYCLE;

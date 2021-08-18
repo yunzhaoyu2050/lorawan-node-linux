@@ -9,35 +9,16 @@
 #include <sys/ioctl.h>
 #include <unistd.h>
 
-/* sx126x spidev funcs */
-
 void SX126xWakeup(void) {
-#ifdef RT_USING_SPI
-  // uint8_t msg[2] = {RADIO_GET_STATUS, 0x00};
+  // // Wait for chip to be ready.
+  // SX126xWaitOnBusy();
 
-  // rt_spi_transfer(SX126x.spi, msg, RT_NULL, 2);
-
-  // Wait for chip to be ready.
-  SX126xWaitOnBusy();
-
-  // Update operating mode context variable
-  SX126xSetOperatingMode(MODE_STDBY_RC);
-#else
-#endif
+  // // Update operating mode context variable
+  // SX126xSetOperatingMode(MODE_STDBY_RC);
 }
 
 int SX126xWriteCommand(RadioCommands_t command, uint8_t *buffer,
                        uint16_t size) {
-  // #ifdef RT_USING_SPI
-  //     SX126xCheckDeviceReady( );
-  //     rt_spi_send_then_send(SX126x.spi,&command,1,buffer,size);
-  //     if( command != RADIO_SET_SLEEP )
-  //     {
-  //         SX126xWaitOnBusy( );
-  //     }
-  // #else
-  // #endif
-
   uint8_t out_buf[1024]; // max 1024 byte
   uint8_t command_size;
   struct spi_ioc_transfer k;
@@ -63,7 +44,7 @@ int SX126xWriteCommand(RadioCommands_t command, uint8_t *buffer,
   if (command != RADIO_SET_SLEEP)
     SX126xWaitOnBusy();
   /* determine return code */
-  if (a != (int)k.len) {    
+  if (a != (int)k.len) {
     log(ERROR, "SX126xWriteCommand failed\n");
     return -1;
   } else {
@@ -72,18 +53,6 @@ int SX126xWriteCommand(RadioCommands_t command, uint8_t *buffer,
 }
 
 int SX126xReadCommand(RadioCommands_t command, uint8_t *buffer, uint16_t size) {
-  // #ifdef RT_USING_SPI
-  //     uint8_t status = 0;
-  //     uint8_t buffer_temp[16] = {0}; // command size is 2 size
-  //     SX126xCheckDeviceReady( );
-  //     rt_spi_send_then_recv(SX126x.spi,&command,1,buffer_temp,size + 1);
-  //     status = buffer_temp[0];
-  //     rt_memcpy(buffer,buffer_temp+1,size);
-  //     SX126xWaitOnBusy( );
-  //     return status;
-  // #else
-  // #endif
-
   uint8_t out_buf[1024];
   uint8_t command_size;
   uint8_t in_buf[1024]; // max 1024 byte
@@ -120,17 +89,6 @@ int SX126xReadCommand(RadioCommands_t command, uint8_t *buffer, uint16_t size) {
 }
 
 int SX126xWriteRegisters(uint16_t address, uint8_t *buffer, uint16_t size) {
-  // #ifdef RT_USING_SPI
-  //     uint8_t msg[3] = {0};
-  //     msg[0] = RADIO_WRITE_REGISTER;
-  //     msg[1] = ( address & 0xFF00 ) >> 8;
-  //     msg[2] = address & 0x00FF;
-  //     SX126xCheckDeviceReady( );
-  //     rt_spi_send_then_send(SX126x.spi,msg,3,buffer,size);
-  //     SX126xWaitOnBusy( );
-  // #else
-  // #endif
-
   uint8_t out_buf[1024]; // max 1024 byte
   uint8_t command_size;
   struct spi_ioc_transfer k;
@@ -197,17 +155,6 @@ int SX126xWriteRegister(uint16_t address, uint8_t value) {
 }
 
 int SX126xReadRegisters(uint16_t address, uint8_t *buffer, uint16_t size) {
-  // #ifdef RT_USING_SPI
-  //     uint8_t msg[4] = {0};
-  //     msg[0] = RADIO_READ_REGISTER;
-  //     msg[1] = ( address & 0xFF00 ) >> 8;
-  //     msg[2] = address & 0x00FF;
-  //     msg[3] = 0;
-  //     SX126xCheckDeviceReady( );
-  //     rt_spi_send_then_recv(SX126x.spi,msg,4,buffer,size);
-  //     SX126xWaitOnBusy( );
-  // #else
-  // #endif
 
   uint8_t out_buf[1024];
   uint8_t command_size;
@@ -247,10 +194,6 @@ int SX126xReadRegisters(uint16_t address, uint8_t *buffer, uint16_t size) {
 }
 
 int SX126xReadRegister(uint16_t address) {
-  // uint8_t data;
-  // SX126xReadRegisters( address, &data, 1 );
-  // return data;
-
   uint8_t data = 0;
   uint8_t out_buf[5];
   uint8_t command_size;
@@ -285,15 +228,6 @@ int SX126xReadRegister(uint16_t address) {
 }
 
 int SX126xWriteBuffer(uint8_t offset, uint8_t *buffer, uint8_t size) {
-  // #ifdef RT_USING_SPI
-  //     uint8_t msg[2] = {0};
-  //     msg[0] = RADIO_WRITE_BUFFER;
-  //     msg[1] = offset;
-  //     SX126xCheckDeviceReady( );
-  //     rt_spi_send_then_send(SX126x.spi,msg,2,buffer,size);
-  //     SX126xWaitOnBusy( );
-  // #else
-  // #endif
 
   uint8_t out_buf[1024]; // max 1024 byte
   uint8_t command_size;
@@ -328,17 +262,6 @@ int SX126xWriteBuffer(uint8_t offset, uint8_t *buffer, uint8_t size) {
 }
 
 int SX126xReadBuffer(uint8_t offset, uint8_t *buffer, uint8_t size) {
-  // #ifdef RT_USING_SPI
-  //     uint8_t msg[3] = {0};
-  //     msg[0] = RADIO_READ_BUFFER;
-  //     msg[1] = offset;
-  //     msg[2] = 0;
-  //     SX126xCheckDeviceReady( );
-  //     rt_spi_send_then_recv(SX126x.spi,msg,3,buffer,size);
-  //     SX126xWaitOnBusy( );
-  // #else
-  // #endif
-
   uint8_t out_buf[1024];
   uint8_t command_size;
   uint8_t in_buf[1024]; // max 1024 byte

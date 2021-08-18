@@ -1,7 +1,7 @@
 /*!
  * \file      main.c
  *
- * \brief     FUOTA interop tests - test 01
+ * \brief     Performs a periodic uplink
  *
  * \copyright Revised BSD License, see section \ref LICENSE.
  *
@@ -19,10 +19,10 @@
  * \author    Miguel Luis ( Semtech )
  */
 
-/*! \file fuota-test-01/NucleoL152/main.c */
+/*! \file periodic-uplink/NucleoL152/main.c */
 
-#include "main.h"
 #include "./common/githubVersion.h"
+#include "CayenneLpp.h"
 #include "Commissioning.h"
 #include "LmHandler.h"
 #include "LmHandlerMsgDisplay.h"
@@ -34,7 +34,9 @@
 #include "firmwareVersion.h"
 #include "gpio.h"
 
+
 #include "lora-spi-sx126x.h"
+#include "main.h"
 #include "radio.h"
 #include "sx126x-board.h"
 #include "timer.h"
@@ -49,9 +51,8 @@
 #include <sys/select.h>
 #include <time.h>
 #include <unistd.h>
-
-#include "log.h"
 #include "lora-radio-config.h"
+#include "log.h"
 
 int g_cfgLogLevel = DEBUG;
 char log_file_name[32] = "/var/log/lorawan_macnode/runlog";
@@ -68,18 +69,20 @@ char log_file_name[32] = "/var/log/lorawan_macnode/runlog";
 /*!
  * LoRaWAN default end-device class
  */
+#ifndef LORAWAN_DEFAULT_CLASS
 #define LORAWAN_DEFAULT_CLASS CLASS_B
+#endif
 
 /*!
- * Defines the application data transmission duty cycle. 40s, value in [ms].
+ * Defines the application data transmission duty cycle. 5s, value in [ms].
  */
-#define APP_TX_DUTYCYCLE 40000
+#define APP_TX_DUTYCYCLE 5000
 
 /*!
- * Defines a random delay for application data transmission duty cycle. 5s,
+ * Defines a random delay for application data transmission duty cycle. 1s,
  * value in [ms].
  */
-#define APP_TX_DUTYCYCLE_RND 5000
+#define APP_TX_DUTYCYCLE_RND 1000
 
 /*!
  * LoRaWAN Adaptive Data Rate
@@ -94,7 +97,7 @@ char log_file_name[32] = "/var/log/lorawan_macnode/runlog";
  * \remark Please note that LORAWAN_DEFAULT_DATARATE is used only when ADR is
  * disabled
  */
-#define LORAWAN_DEFAULT_DATARATE DR_3
+#define LORAWAN_DEFAULT_DATARATE DR_0
 
 /*!
  * LoRaWAN confirmed messages
@@ -115,6 +118,13 @@ char log_file_name[32] = "/var/log/lorawan_macnode/runlog";
 #define LORAWAN_DUTYCYCLE_ON true
 
 /*!
+ * LoRaWAN application port
+ * @remark The allowed port range is from 1 up to 223. Other values are
+ * reserved.
+ */
+#define LORAWAN_APP_PORT 2
+
+/*!
  *
  */
 typedef enum {
@@ -126,6 +136,20 @@ typedef enum {
  * User application data
  */
 static uint8_t AppDataBuffer[LORAWAN_APP_DATA_BUFFER_MAX_SIZE];
+
+/*!
+ * User application data structure
+ */
+static LmHandlerAppData_t AppData = {
+    .Buffer = AppDataBuffer,
+    .BufferSize = 0,
+    .Port = 0,
+};
+
+/*!
+ * Specifies the state of the application LED
+ */
+static bool AppLedStateOn = false;
 
 /*!
  * Timer to handle the application data transmission duty cycle
@@ -164,17 +188,7 @@ static void OnSysTimeUpdate(bool isSynchronized, int32_t timeCorrection);
 #else
 static void OnSysTimeUpdate(void);
 #endif
-#if (FRAG_DECODER_FILE_HANDLING_NEW_API == 1)
-static int8_t FragDecoderWrite(uint32_t addr, uint8_t *data, uint32_t size);
-static int8_t FragDecoderRead(uint32_t addr, uint8_t *data, uint32_t size);
-#endif
-static void OnFragProgress(uint16_t fragCounter, uint16_t fragNb,
-                           uint8_t fragSize, uint16_t fragNbLost);
-#if (FRAG_DECODER_FILE_HANDLING_NEW_API == 1)
-static void OnFragDone(int32_t status, uint32_t size);
-#else
-static void OnFragDone(int32_t status, uint8_t *file, uint32_t size);
-#endif
+static void PrepareTxFrame(void);
 static void StartTxProcess(LmHandlerTxEvents_t txEvent);
 static void UplinkProcess(void);
 
@@ -239,39 +253,6 @@ static LmhpComplianceParams_t LmhpComplianceParams = {
 };
 
 /*!
- * Defines the maximum size for the buffer receiving the fragmentation result.
- *
- * \remark By default FragDecoder.h defines:
- *         \ref FRAG_MAX_NB   21
- *         \ref FRAG_MAX_SIZE 50
- *
- *         FileSize = FRAG_MAX_NB * FRAG_MAX_SIZE
- *
- *         If bigger file size is to be received or is fragmented differently
- *         one must update those parameters.
- */
-#define UNFRAGMENTED_DATA_SIZE (21 * 50)
-
-/*
- * Un-fragmented data storage.
- */
-static uint8_t UnfragmentedData[UNFRAGMENTED_DATA_SIZE];
-
-static LmhpFragmentationParams_t FragmentationParams = {
-#if (FRAG_DECODER_FILE_HANDLING_NEW_API == 1)
-    .DecoderCallbacks =
-        {
-            .FragDecoderWrite = FragDecoderWrite,
-            .FragDecoderRead = FragDecoderRead,
-        },
-#else
-    .Buffer = UnfragmentedData,
-    .BufferSize = UNFRAGMENTED_DATA_SIZE,
-#endif
-    .OnProgress = OnFragProgress,
-    .OnDone = OnFragDone};
-
-/*!
  * Indicates if LoRaMacProcess call is pending.
  *
  * \warning If variable is equal to 0 then the MCU can be set in low power mode
@@ -281,26 +262,6 @@ static volatile uint8_t IsMacProcessPending = 0;
 static volatile uint8_t IsTxFramePending = 0;
 
 static volatile uint32_t TxPeriodicity = 0;
-
-/*
- * Indicates if the system time has been synchronized
- */
-static volatile bool IsClockSynched = false;
-
-/*
- * MC Session Started
- */
-static volatile bool IsMcSessionStarted = false;
-
-/*
- * Indicates if the file transfer is done
- */
-static volatile bool IsFileTransferDone = false;
-
-/*
- *  Received file computed CRC32
- */
-static volatile uint32_t FileRxCrc = 0;
 
 static const char *g_spi_device = "/dev/spidev1.1";
 static unsigned int g_loop_tv = 10 * 1000;
@@ -374,12 +335,11 @@ int main(int argc, char *argv[]) {
     log(ERROR, "dio1 gpio fd open failed.");
     goto exit1;
   }
-
   TimerInit(&Led1Timer, OnLed1TimerEvent, NULL);
   TimerSetValue(&Led1Timer, 0, 25);
 
   TimerInit(&Led2Timer, OnLed2TimerEvent, NULL);
-  TimerSetValue(&Led2Timer, 0, 100);
+  TimerSetValue(&Led2Timer, 0, 25);
 
   TimerInit(&LedBeaconTimer, OnLedBeaconTimerEvent, NULL);
   TimerSetValue(&LedBeaconTimer, 0, 5000);
@@ -390,7 +350,7 @@ int main(int argc, char *argv[]) {
 
   const Version_t appVersion = {.Value = FIRMWARE_VERSION};
   const Version_t gitHubVersion = {.Value = GITHUB_VERSION};
-  DisplayAppInfo("fuota-test-01", &appVersion, &gitHubVersion);
+  DisplayAppInfo("periodic-uplink-lpp", &appVersion, &gitHubVersion);
 
   if (LmHandlerInit(&LmHandlerCallbacks, &LmHandlerParams) !=
       LORAMAC_HANDLER_SUCCESS) {
@@ -399,19 +359,16 @@ int main(int argc, char *argv[]) {
     while (1) {
     }
   }
-  log(INFO, "LmHandlerInit init success.");
+	log(INFO, "LmHandlerInit init success.");
 
   // Set system maximum tolerated rx error in milliseconds
   LmHandlerSetSystemMaxRxError(20);
 
   // The LoRa-Alliance Compliance protocol package should always be
-  // initialized and activated. LoRa-Alliance Compliance
+  // initialized and activated.
   LmHandlerPackageRegister(PACKAGE_ID_COMPLIANCE, &LmhpComplianceParams);
-  LmHandlerPackageRegister(PACKAGE_ID_CLOCK_SYNC, NULL);
-  LmHandlerPackageRegister(PACKAGE_ID_REMOTE_MCAST_SETUP, NULL);
-  LmHandlerPackageRegister(PACKAGE_ID_FRAGMENTATION, &FragmentationParams);
-  
-  // time_t lastTime = 0;
+	
+	// time_t lastTime = 0;
   struct timespec last_ts = {0};
   struct timespec now_ts = {0};
   clock_gettime(CLOCK_MONOTONIC, &now_ts);
@@ -419,9 +376,6 @@ int main(int argc, char *argv[]) {
   
   struct timeval timeout = {0};
   log(INFO, "main dispatch process, timeout(%dus).", g_loop_tv);
-
-  IsClockSynched = false;
-  IsFileTransferDone = false;
 
   LmHandlerJoin();
 
@@ -475,8 +429,8 @@ int main(int argc, char *argv[]) {
       // log(INFO, "10 ms process end, (%d)(%d)\r\n", tms, sums);
     }
     
-    if (sums >= 5000) {
-      log(INFO, "5000 ms process, (%d)(%d)\r\n", tms, sums);
+    if (sums >= 1000) {
+      log(INFO, "1000 ms process, (%d)(%d)\r\n", tms, sums);
       // Processes the LoRaMac events
       LmHandlerProcess();
       // Process application uplinks management
@@ -539,36 +493,32 @@ static void OnTxData(LmHandlerTxParams_t *params) { DisplayTxUpdate(params); }
 
 static void OnRxData(LmHandlerAppData_t *appData, LmHandlerRxParams_t *params) {
   DisplayRxUpdate(appData, params);
+
+  switch (appData->Port) {
+  case 1: // The application LED can be controlled on port 1 or 2
+  case LORAWAN_APP_PORT: {
+    AppLedStateOn = appData->Buffer[0] & 0x01;
+  } break;
+  default:
+    break;
+  }
+
+  // Switch LED 2 ON for each received downlink
+  // GpioWrite(&Led2, 1);
+  TimerStart(&Led2Timer);
 }
 
 static void OnClassChange(DeviceClass_t deviceClass) {
   DisplayClassUpdate(deviceClass);
 
-  switch (deviceClass) {
-  default:
-  case CLASS_A: {
-    IsMcSessionStarted = false;
-    break;
-  }
-  case CLASS_B: {
-    // Inform the server as soon as possible that the end-device has switched to
-    // ClassB
-    LmHandlerAppData_t appData = {
-        .Buffer = NULL,
-        .BufferSize = 0,
-        .Port = 0,
-    };
-    LmHandlerSend(&appData, LORAMAC_HANDLER_UNCONFIRMED_MSG);
-    IsMcSessionStarted = true;
-    break;
-  }
-  case CLASS_C: {
-    IsMcSessionStarted = true;
-    // Switch LED 2 ON
-    // GpioWrite(&Led2, 1);
-    break;
-  }
-  }
+  // Inform the server as soon as possible that the end-device has switched to
+  // ClassB
+  LmHandlerAppData_t appData = {
+      .Buffer = NULL,
+      .BufferSize = 0,
+      .Port = 0,
+  };
+  LmHandlerSend(&appData, LORAMAC_HANDLER_UNCONFIRMED_MSG);
 }
 
 static void OnBeaconStatusChange(LoRaMacHandlerBeaconParams_t *params) {
@@ -591,77 +541,37 @@ static void OnBeaconStatusChange(LoRaMacHandlerBeaconParams_t *params) {
 }
 
 #if (LMH_SYS_TIME_UPDATE_NEW_API == 1)
-static void OnSysTimeUpdate(bool isSynchronized, int32_t timeCorrection) {
-  IsClockSynched = isSynchronized;
-}
+static void OnSysTimeUpdate(bool isSynchronized, int32_t timeCorrection) {}
 #else
-static void OnSysTimeUpdate(void) { IsClockSynched = true; }
+static void OnSysTimeUpdate(void) {}
 #endif
 
-#if (FRAG_DECODER_FILE_HANDLING_NEW_API == 1)
-static int8_t FragDecoderWrite(uint32_t addr, uint8_t *data, uint32_t size) {
-  if (size >= UNFRAGMENTED_DATA_SIZE) {
-    return -1; // Fail
+/*!
+ * Prepares the payload of the frame and transmits it.
+ */
+static void PrepareTxFrame(void) {
+  if (LmHandlerIsBusy() == true) {
+    return;
   }
-  for (uint32_t i = 0; i < size; i++) {
-    UnfragmentedData[addr + i] = data[i];
+
+  uint8_t channel = 0;
+
+  AppData.Port = LORAWAN_APP_PORT;
+
+  CayenneLppReset();
+  CayenneLppAddDigitalInput(channel++, AppLedStateOn);
+  // CayenneLppAddAnalogInput(channel++, BoardGetBatteryLevel() * 100 / 254);
+
+  CayenneLppCopy(AppData.Buffer);
+  AppData.BufferSize = CayenneLppGetSize();
+
+  if (LmHandlerSend(&AppData, LmHandlerParams.IsTxConfirmed) ==
+      LORAMAC_HANDLER_SUCCESS) {
+    // Switch LED 1 ON
+    // GpioWrite(&Led1, 1);
+    TimerStart(&Led1Timer);
   }
-  return 0; // Success
 }
-
-static int8_t FragDecoderRead(uint32_t addr, uint8_t *data, uint32_t size) {
-  if (size >= UNFRAGMENTED_DATA_SIZE) {
-    return -1; // Fail
-  }
-  for (uint32_t i = 0; i < size; i++) {
-    data[i] = UnfragmentedData[addr + i];
-  }
-  return 0; // Success
-}
-#endif
-
-static void OnFragProgress(uint16_t fragCounter, uint16_t fragNb,
-                           uint8_t fragSize, uint16_t fragNbLost) {
-  // Switch LED 2 OFF for each received downlink
-  // GpioWrite(&Led2, 0);
-  TimerStart(&Led2Timer);
-
-  printf("\n###### =========== FRAG_DECODER ============ ######\n");
-  printf("######               PROGRESS                ######\n");
-  printf("###### ===================================== ######\n");
-  printf("RECEIVED    : %5d / %5d Fragments\n", fragCounter, fragNb);
-  printf("              %5d / %5d Bytes\n", fragCounter * fragSize,
-         fragNb * fragSize);
-  printf("LOST        :       %7d Fragments\n\n", fragNbLost);
-}
-
-#if (FRAG_DECODER_FILE_HANDLING_NEW_API == 1)
-static void OnFragDone(int32_t status, uint32_t size) {
-  FileRxCrc = Crc32(UnfragmentedData, size);
-  IsFileTransferDone = true;
-  // Switch LED 2 OFF
-  // GpioWrite(&Led2, 0);
-
-  printf("\n###### =========== FRAG_DECODER ============ ######\n");
-  printf("######               FINISHED                ######\n");
-  printf("###### ===================================== ######\n");
-  printf("STATUS      : %d\n", status);
-  printf("CRC         : %08u\n\n", FileRxCrc);
-}
-#else
-static void OnFragDone(int32_t status, uint8_t *file, uint32_t size) {
-  FileRxCrc = Crc32(file, size);
-  IsFileTransferDone = true;
-  // Switch LED 2 OFF
-  // GpioWrite(&Led2, 0);
-
-  printf("\n###### =========== FRAG_DECODER ============ ######\n");
-  printf("######               FINISHED                ######\n");
-  printf("###### ===================================== ######\n");
-  printf("STATUS      : %ld\n", status);
-  printf("CRC         : %08lX\n\n", FileRxCrc);
-}
-#endif
 
 static void StartTxProcess(LmHandlerTxEvents_t txEvent) {
   switch (txEvent) {
@@ -671,7 +581,6 @@ static void StartTxProcess(LmHandlerTxEvents_t txEvent) {
     // Schedule 1st packet transmission
     TimerInit(&TxTimer, OnTxTimerEvent, NULL);
     TimerSetValue(&TxTimer, 0, TxPeriodicity);
-    printf("StartTxProcess TxPeriodicity:%d\r\n", TxPeriodicity);
     OnTxTimerEvent(NULL);
   } break;
   case LORAMAC_HANDLER_TX_ON_EVENT: {
@@ -680,53 +589,13 @@ static void StartTxProcess(LmHandlerTxEvents_t txEvent) {
 }
 
 static void UplinkProcess(void) {
-  LmHandlerErrorStatus_t status = LORAMAC_HANDLER_ERROR;
-
-  if (LmHandlerIsBusy() == true) {
-    return;
-  }
-
   uint8_t isPending = 0;
   CRITICAL_SECTION_BEGIN();
   isPending = IsTxFramePending;
   IsTxFramePending = 0;
   CRITICAL_SECTION_END();
   if (isPending == 1) {
-    if (IsMcSessionStarted == false) {
-      if (IsFileTransferDone == false) {
-        if (IsClockSynched == false) {
-          status = LmhpClockSyncAppTimeReq();
-        } else {
-          AppDataBuffer[0] = randr(0, 255);
-          // Send random packet
-          LmHandlerAppData_t appData = {
-              .Buffer = AppDataBuffer,
-              .BufferSize = 1,
-              .Port = 1,
-          };
-          status = LmHandlerSend(&appData, LmHandlerParams.IsTxConfirmed);
-        }
-      } else {
-        AppDataBuffer[0] = 0x05; // FragDataBlockAuthReq
-        AppDataBuffer[1] = FileRxCrc & 0x000000FF;
-        AppDataBuffer[2] = (FileRxCrc >> 8) & 0x000000FF;
-        AppDataBuffer[3] = (FileRxCrc >> 16) & 0x000000FF;
-        AppDataBuffer[4] = (FileRxCrc >> 24) & 0x000000FF;
-
-        // Send FragAuthReq
-        LmHandlerAppData_t appData = {
-            .Buffer = AppDataBuffer,
-            .BufferSize = 5,
-            .Port = 201,
-        };
-        status = LmHandlerSend(&appData, LmHandlerParams.IsTxConfirmed);
-      }
-      if (status == LORAMAC_HANDLER_SUCCESS) {
-        // Switch LED 1 ON
-        // GpioWrite(&Led1, 1);
-        TimerStart(&Led1Timer);
-      }
-    }
+    PrepareTxFrame();
   }
 }
 
@@ -779,8 +648,8 @@ static void OnLed1TimerEvent(void *context) {
  */
 static void OnLed2TimerEvent(void *context) {
   TimerStop(&Led2Timer);
-  // Switch LED 2 ON
-  // GpioWrite(&Led2, 1);
+  // Switch LED 2 OFF
+  // GpioWrite(&Led2, 0);
 }
 
 /*!

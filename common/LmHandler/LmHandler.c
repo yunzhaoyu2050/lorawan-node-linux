@@ -128,7 +128,6 @@ static LoRaMacHandlerBeaconParams_t BeaconParams = {
 
 /*!
  * Indicates if a switch to Class B operation is pending or not.
- * 指示切换到 B 类操作是否挂起
  * TODO: Create a new structure to store the current handler states/status
  *       and add the below variable to it.
  */
@@ -136,7 +135,6 @@ static bool IsClassBSwitchPending = false;
 
 /*!
  * Stores the time to wait before next transmission
- * 存储下一次传输前等待的时间
  * TODO: Create a new structure to store the current handler states/status
  *       and add the below variable to it.
  */
@@ -230,13 +228,12 @@ static void LmHandlerPackagesProcess(void);
 
 LmHandlerErrorStatus_t LmHandlerInit(LmHandlerCallbacks_t *handlerCallbacks,
                                      LmHandlerParams_t *handlerParams) {
-  //
   uint16_t nbNvmData = 0;
-  MibRequestConfirm_t mibReq;            // 请求时的数据结构
-  LmHandlerParams = handlerParams;       // 输入的lorawan配置参数
-  LmHandlerCallbacks = handlerCallbacks; // 各个功能的回调
+  MibRequestConfirm_t mibReq;
+  LmHandlerParams = handlerParams;
+  LmHandlerCallbacks = handlerCallbacks;
 
-  LoRaMacPrimitives.MacMcpsConfirm = McpsConfirm; // 用于通知上层MAC事件
+  LoRaMacPrimitives.MacMcpsConfirm = McpsConfirm;
   LoRaMacPrimitives.MacMcpsIndication = McpsIndication;
   LoRaMacPrimitives.MacMlmeConfirm = MlmeConfirm;
   LoRaMacPrimitives.MacMlmeIndication = MlmeIndication;
@@ -315,7 +312,7 @@ LmHandlerErrorStatus_t LmHandlerInit(LmHandlerCallbacks_t *handlerCallbacks,
 
   LoRaMacTestSetDutyCycleOn(LmHandlerParams->DutyCycleEnabled);
 
-  LoRaMacStart(); // mac调度状态机初始化
+  LoRaMacStart();
 
   mibReq.Type = MIB_NETWORK_ACTIVATION;
   if (LoRaMacMibGetRequestConfirm(&mibReq) == LORAMAC_STATUS_OK) {
@@ -412,7 +409,7 @@ static void LmHandlerJoinRequest(bool isOtaa) {
   }
   // Starts the join procedure
   LmHandlerCallbacks->OnMacMlmeRequest(LoRaMacMlmeRequest(&mlmeReq), &mlmeReq,
-                                       mlmeReq.ReqReturn.DutyCycleWaitTime);
+                                       mlmeReq.ReqReturn.DutyCycleWaitTime); // 打印join信息
   DutyCycleWaitTime = mlmeReq.ReqReturn.DutyCycleWaitTime;
 }
 

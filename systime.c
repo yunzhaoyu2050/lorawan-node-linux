@@ -122,7 +122,7 @@ void SysTimeSet(SysTime_t sysTime) {
 SysTime_t SysTimeGet(void) {
   SysTime_t sysTime = {.Seconds = 0, .SubSeconds = 0};
   struct timespec tn = {0};
-  clock_gettime(CLOCK_REALTIME,
+  clock_gettime(CLOCK_REALTIME, /* 系统实时时间,随系统实时时间改变而改变 */
                 &tn); // Current seconds/sub-seconds since UNIX epoch origin
   sysTime.Seconds = tn.tv_sec;
   sysTime.SubSeconds = tn.tv_nsec / 1000000;
@@ -133,8 +133,9 @@ SysTime_t SysTimeGetMcuTime(void) {
   SysTime_t calendarTime = {.Seconds = 0, .SubSeconds = 0};
   // TODO: 调试是以CLOCK_MONOTONIC还是CLOCK_PROCESS_CPUTIME_ID为条件
   struct timespec tn = {0};
-  clock_gettime(CLOCK_MONOTONIC,
-                &tn); // Current seconds/sub-seconds since Mcu started
+  clock_gettime(
+      CLOCK_MONOTONIC, /* 本进程到当前代码系统CPU花费的时间 */
+      &tn);                     // Current seconds/sub-seconds since Mcu started
   calendarTime.Seconds = tn.tv_sec;
   calendarTime.SubSeconds = tn.tv_nsec / 1000000;
   return calendarTime;

@@ -29,61 +29,6 @@
 #include <stdbool.h>
 #include <stdint.h>
 
-#ifdef LORA_RADIO_GPIO_SETUP_BY_PIN_NAME
-// #if (RT_VER_NUM <= 0x40002)
-// #define LORA_RADIO_NSS_PIN stm32_pin_get(LORA_RADIO_NSS_PIN_NAME)
-// #define LORA_RADIO_BUSY_PIN stm32_pin_get(LORA_RADIO_BUSY_PIN_NAME)
-// #define LORA_RADIO_DIO1_PIN stm32_pin_get(LORA_RADIO_DIO1_PIN_NAME)
-// #define LORA_RADIO_RESET_PIN stm32_pin_get(LORA_RADIO_RESET_PIN_NAME)
-// #if defined(LORA_RADIO_DIO2_PIN_NAME)
-// #define LORA_RADIO_DIO2_PIN stm32_pin_get(LORA_RADIO_DIO2_PIN_NAME)
-// #endif
-// #if defined(LORA_RADIO_RFSW1_PIN_NAME) && defined(LORA_RADIO_RFSW2_PIN_NAME)
-// #define LORA_RADIO_RFSW1_PIN stm32_pin_get(LORA_RADIO_RFSW1_PIN_NAME)
-// #define LORA_RADIO_RFSW2_PIN stm32_pin_get(LORA_RADIO_RFSW2_PIN_NAME)
-// #endif
-// #else
-// #define LORA_RADIO_NSS_PIN rt_pin_get(LORA_RADIO_NSS_PIN_NAME)
-// #define LORA_RADIO_BUSY_PIN rt_pin_get(LORA_RADIO_BUSY_PIN_NAME)
-// #define LORA_RADIO_DIO1_PIN rt_pin_get(LORA_RADIO_DIO1_PIN_NAME)
-// #define LORA_RADIO_RESET_PIN rt_pin_get(LORA_RADIO_RESET_PIN_NAME)
-// #if defined(LORA_RADIO_DIO2_PIN_NAME)
-// #define LORA_RADIO_DIO2_PIN rt_pin_get(LORA_RADIO_DIO2_PIN_NAME)
-// #endif
-// #if defined(LORA_RADIO_RFSW1_PIN_NAME) && defined(LORA_RADIO_RFSW2_PIN_NAME)
-// #define LORA_RADIO_RFSW1_PIN rt_pin_get(LORA_RADIO_RFSW1_PIN_NAME)
-// #define LORA_RADIO_RFSW2_PIN rt_pin_get(LORA_RADIO_RFSW2_PIN_NAME)
-// #endif
-// #endif /* ( RT_VER_NUM <= 0x40002) */
-
-#else
-/* if not use env\menuconfig,define Radio GPIO directly.*/
-// #ifndef LORA_RADIO_NSS_PIN
-extern int LORA_RADIO_NSS_PIN;
-// #endif
-// #ifndef LORA_RADIO_RESET_PIN
-extern int LORA_RADIO_RESET_PIN;
-// #endif
-// #ifndef LORA_RADIO_DIO1_PIN
-extern int LORA_RADIO_DIO1_PIN;
-// #endif
-// #ifndef LORA_RADIO_BUSY_PIN
-extern int LORA_RADIO_BUSY_PIN;
-// #endif
-// #ifndef LORA_RADIO_RFSW1_PIN
-extern int LORA_RADIO_RFSW1_PIN;
-// #endif
-// #ifndef LORA_RADIO_RFSW2_PIN
-extern int LORA_RADIO_RFSW2_PIN;
-// #endif
-#endif // end of LORA_RADIO_GPIO_SETUP_BY_PIN_NAME
-
-// typedef struct {
-//   int dio_gpio;
-//   int dio_gpio_fd;
-//   DioIrqHandler callBack;
-// }sx126xRadioDioxIrq_t;
-// extern sx126xRadioDioxIrq_t srdio1;
 
 /*!
  * Defines the time required for the TCXO to wakeup [ms].
@@ -175,19 +120,5 @@ bool SX126xCheckRfFrequency(uint32_t frequency);
  * \retval time Board TCXO wakeup time in ms.
  */
 uint32_t SX126xGetBoardTcxoWakeupTime(void);
-
-// /*!
-//  * \brief Writes new Tx debug pin state
-//  *
-//  * \param [IN] state Debug pin state
-//  */
-// void SX126xDbgPinTxWrite(uint8_t state);
-
-// /*!
-//  * \brief Writes new Rx debug pin state
-//  *
-//  * \param [IN] state Debug pin state
-//  */
-// void SX126xDbgPinRxWrite(uint8_t state);
 
 #endif // __SX126x_BOARD_H__

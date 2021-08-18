@@ -20,6 +20,11 @@ LDFLAGS += -lm -lpthread -lrt
 all: $(OBJDIR) $(APP)
 $(OBJDIR):
 	@mkdir -p $(OBJSUBDIR)
+	@cp ../*.c ./
+	@cp ../*.h ./
+	@cp ../common/* ./ -arf 
+	@cp ../mac/* ./ -arf
+	@cp ../soft-se/* ./ -arf
 $(APP): $(OBJDIR)/$(APP)
 $(OBJDIR)/$(APP): $(OBJS)
 	$(CC) $(OBJS) $(LDFLAGS) -o $@

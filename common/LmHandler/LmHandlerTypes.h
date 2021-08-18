@@ -81,7 +81,7 @@ typedef enum {
 } LmHandlerNvmContextStates_t;
 
 /*!
- * Commissioning parameters 调试参数
+ * Commissioning parameter
  */
 typedef struct CommissioningParams_s {
   bool IsOtaaActivation;

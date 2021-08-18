@@ -30,7 +30,6 @@
 #include <sys/types.h>
 #include <unistd.h>
 
-// #include "eeprom-board.h"
 #include "nvmm.h"
 
 uint16_t NvmmWrite(uint8_t *src, uint16_t size, uint16_t offset) {
@@ -46,10 +45,6 @@ uint16_t NvmmWrite(uint8_t *src, uint16_t size, uint16_t offset) {
     return 0;
   close(nvmm_fd);
   return ret;
-  // if (EepromMcuWriteBuffer(offset, src, size) == LMN_STATUS_OK) {
-  //   return size;
-  // }
-  // return 0;
 }
 
 uint16_t NvmmRead(uint8_t *dest, uint16_t size, uint16_t offset) {
@@ -64,10 +59,6 @@ uint16_t NvmmRead(uint8_t *dest, uint16_t size, uint16_t offset) {
     return 0;
   close(nvmm_fd);
   return ret;
-  // if (EepromMcuReadBuffer(offset, dest, size) == LMN_STATUS_OK) {
-  //   return size;
-  // }
-  // return 0;
 }
 
 bool NvmmCrc32Check(uint16_t size, uint16_t offset) {
@@ -108,11 +99,4 @@ bool NvmmReset(uint16_t size, uint16_t offset) {
     return 0;
   close(nvmm_fd);
   return ret;
-  // uint32_t crc32 = 0;
-
-  // if (EepromMcuWriteBuffer(offset + size - sizeof(crc32), (uint8_t *)&crc32,
-  //                          sizeof(crc32)) == LMN_STATUS_OK) {
-  //   return true;
-  // }
-  // return false;
 }

@@ -29,24 +29,11 @@
 #include "sx126x-board.h"
 #include <string.h>
 
-// #define LOG_TAG "PHY.LoRa.SX126X"
-// #define LOG_LEVEL LOG_LVL_DBG
-// #include "lora-radio-debug.h"
-
 #include "main.h"
 
 #include <time.h>
 
 #include "log.h"
-
-#ifdef LORA_RADIO_DRIVER_USING_ON_RTOS_RT_THREAD
-
-#define EV_LORA_RADIO_DIO_IRQ_FIRED 0x0001
-
-static struct rt_event lora_radio_event;
-static struct rt_thread lora_radio_thread;
-static rt_uint8_t rt_lora_radio_thread_stack[4096];
-#endif
 
 /*!
  * \brief Initializes the radio
@@ -479,17 +466,16 @@ static TimerEvent_t RxTimeoutTimer;
 uint8_t RadioCheck(void) {
   uint8_t test = 0;
 
-  log(
-      INFO, "Packet Type is %s\n",
+  log(INFO, "Packet Type is %s\n",
       (SX126x.PacketParams.PacketType == PACKET_TYPE_LORA) ? "LoRa" : "FSK");
 
   /* SPI Access Check */
   SX126xWriteRegister(REG_LR_PAYLOADLENGTH, 0x55);
   test = SX126xReadRegister(REG_LR_PAYLOADLENGTH);
   log(INFO,
-                       "SPI Access Check %s, LoRa PAYLOAD LENGTH Reg(0x22) "
-                       "Current Value: 0x%02X, Expected Value: 0x55",
-                       ((test == 0x55) ? "Success" : "Fail"), test);
+      "SPI Access Check %s, LoRa PAYLOAD LENGTH Reg(0x22) "
+      "Current Value: 0x%02X, Expected Value: 0x55",
+      ((test == 0x55) ? "Success" : "Fail"), test);
   if (test != 0x55) {
     return 0;
   }
@@ -521,62 +507,13 @@ static uint8_t RadioGetFskBandwidthRegValue(uint32_t bandwidth) {
     ;
 }
 
-#ifdef LORA_RADIO_DRIVER_USING_ON_RTOS_RT_THREAD
-/**
- * @brief  lora_radio_thread_entry
- * @param  None
- * @retval None
- */
-static void lora_radio_thread_entry(void *parameter) {
-  rt_uint32_t ev;
-
-  while (1) {
-    if (rt_event_recv(&lora_radio_event, EV_LORA_RADIO_DIO_IRQ_FIRED,
-                      RT_EVENT_FLAG_OR | RT_EVENT_FLAG_CLEAR,
-                      RT_WAITING_FOREVER, &ev) == RT_EOK) {
-      RadioIrqProcess();
-    }
-  }
-}
-
-#endif
-
 bool RadioInit(RadioEvents_t *events) {
-#ifdef LORA_RADIO_DRIVER_USING_ON_RTOS_RT_THREAD
-  if (lora_radio_init == false) {
-    SX126x.spi = lora_radio_spi_init(LORA_RADIO0_SPI_BUS_NAME,
-                                     LORA_RADIO0_DEVICE_NAME, RT_NULL);
-    if (SX126x.spi == RT_NULL) {
-      log(ERROR,
-                           "SX126x SPI Init Failed\n");
-      return false;
-    }
 
-    log(ERROR,
-                         "SX126x SPI Init Succeed\n");
-
-    rt_event_init(&lora_radio_event, "ev_phy",
-                  RT_IPC_FLAG_PRIO); // RT_IPC_FLAG_FIFO);
-
-    rt_thread_init(&lora_radio_thread, "lora-phy", lora_radio_thread_entry,
-                   RT_NULL, &rt_lora_radio_thread_stack[0],
-                   sizeof(rt_lora_radio_thread_stack),
-                   1, // highest priority
-                   20);
-    rt_thread_startup(&lora_radio_thread);
-
-    lora_radio_init = true;
-  }
-#else
   IrqFired = false;
   SX126x.spi = radiodev.spidev_pt;
-#endif
 
   RadioEvents = events;
 
-#ifdef PKG_USING_MULTI_RTIMER
-  hw_rtc_init();
-#endif
   // Initialize driver timeout timers
   TimerInit(&TxTimeoutTimer, RadioOnTxTimeoutIrq, NULL);
   TimerInit(&RxTimeoutTimer, RadioOnRxTimeoutIrq, NULL);
@@ -593,7 +530,8 @@ bool RadioInit(RadioEvents_t *events) {
   SX126xSetTxParams(0, RADIO_RAMP_200_US);
   SX126xSetDioIrqParams(IRQ_RADIO_ALL, IRQ_RADIO_ALL, IRQ_RADIO_NONE,
                         IRQ_RADIO_NONE);
-  SX126xClearIrqStatus(IRQ_RADIO_ALL); // bug - TODO:当前sx126x模块GPIO_RSTN引脚未接中断无法复位
+  SX126xClearIrqStatus(
+      IRQ_RADIO_ALL); // bug - TODO:当前sx126x模块GPIO_RSTN引脚未接中断无法复位
   log(INFO, "RadioInit success.");
   return true;
 }
@@ -1189,27 +1127,14 @@ void RadioOnRxTimeoutIrq(void *argc /** context*/) {
   log(WARN, "PHY RX Timeout\r");
 }
 
-void RadioOnDioIrq(void *context) {
-#ifdef LORA_RADIO_DRIVER_USING_ON_RTOS_RT_THREAD
-  rt_event_send(&lora_radio_event, EV_LORA_RADIO_DIO_IRQ_FIRED);
-#else
-  IrqFired = true;
-#endif
-}
+void RadioOnDioIrq(void *context) { IrqFired = true; }
 
 void RadioIrqProcess(void) {
-#ifdef LORA_RADIO_DRIVER_USING_ON_RTOS_RT_THREAD
-  LORA_RADIO_CRITICAL_SECTION_BEGIN();
-#else
-  if (IrqFired == true)
-#endif
-  {
-#ifndef LORA_RADIO_DRIVER_USING_ON_RTOS_RT_THREAD
+  if (IrqFired == true) {
     LORA_RADIO_CRITICAL_SECTION_BEGIN();
     // Clear IRQ flag
     IrqFired = false;
     LORA_RADIO_CRITICAL_SECTION_END();
-#endif
 
     uint16_t irqRegs = SX126xGetIrqStatus();
     SX126xClearIrqStatus(IRQ_RADIO_ALL);
@@ -1222,7 +1147,7 @@ void RadioIrqProcess(void) {
       if ((RadioEvents != NULL) && (RadioEvents->TxDone != NULL)) {
         RadioEvents->TxDone();
       }
-      log(WARN, "PHY TX Done\r");
+      log(INFO, "PHY TX Done\r");
     }
 
     if ((irqRegs & IRQ_RX_DONE) == IRQ_RX_DONE) {
@@ -1262,7 +1187,7 @@ void RadioIrqProcess(void) {
                               RadioPktStatus.Params.LoRa.RssiPkt,
                               RadioPktStatus.Params.LoRa.SnrPkt);
         }
-        log(WARN, "PHY RX Done\r");
+        log(INFO, "PHY RX Done\r");
       }
     }
 
@@ -1324,8 +1249,4 @@ void RadioIrqProcess(void) {
       log(ERROR, "PHY HEADER Error\r");
     }
   }
-
-#ifdef LORA_RADIO_DRIVER_USING_ON_RTOS_RT_THREAD
-  LORA_RADIO_CRITICAL_SECTION_END();
-#endif
 }
