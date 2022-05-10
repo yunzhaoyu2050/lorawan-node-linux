@@ -145,19 +145,19 @@ typedef struct sLoRaMacCtx
     uint8_t RxPayload[LORAMAC_PHY_MAXPAYLOAD];
     SysTime_t LastTxSysTime;
     /*
-    * LoRaMac internal state
+    * LoRaMac internal state 初始化状态
     */
     uint32_t MacState;
     /*
-    * LoRaMac upper layer event functions
+    * LoRaMac upper layer event functions   LoRaMac 上层事件函数
     */
     LoRaMacPrimitives_t* MacPrimitives;
     /*
-    * LoRaMac upper layer callback functions
+    * LoRaMac upper layer callback functions    LoRaMac 上层回调函数
     */
     LoRaMacCallback_t* MacCallbacks;
     /*
-    * Radio events function pointer
+    * Radio events function pointer   Radio 事件函数
     */
     RadioEvents_t RadioEvents;
     /*
@@ -832,6 +832,7 @@ static void UpdateRxSlotIdleState( void )
 
 static void ProcessRadioTxDone( void )
 {
+    printf("//////////// ProcessRadioTxDone \r\n");
     GetPhyParams_t getPhy;
     PhyParam_t phyParam;
     SetBandTxDoneParams_t txDone;
@@ -893,6 +894,7 @@ static void PrepareRxDoneAbort( void )
 
 static void ProcessRadioRxDone( void )
 {
+    printf("//////////// ProcessRadioRxDone \r\n");
     LoRaMacHeader_t macHdr;
     ApplyCFListParams_t applyCFList;
     GetPhyParams_t getPhy;
@@ -1386,6 +1388,7 @@ static void ProcessRadioRxDone( void )
 
 static void ProcessRadioTxTimeout( void )
 {
+    printf("//////////// ProcessRadioTxTimeout \r\n");
     if( Nvm.MacGroup2.DeviceClass != CLASS_C )
     {
         Radio.Sleep( );
@@ -1464,11 +1467,13 @@ static void HandleRadioRxErrorTimeout( LoRaMacEventInfoStatus_t rx1EventInfoStat
 
 static void ProcessRadioRxError( void )
 {
+    printf("//////////// ProcessRadioRxError \r\n");
     HandleRadioRxErrorTimeout( LORAMAC_EVENT_INFO_STATUS_RX1_ERROR, LORAMAC_EVENT_INFO_STATUS_RX2_ERROR );
 }
 
 static void ProcessRadioRxTimeout( void )
 {
+    printf("//////////// ProcessRadioRxTimeout \r\n");
     HandleRadioRxErrorTimeout( LORAMAC_EVENT_INFO_STATUS_RX1_TIMEOUT, LORAMAC_EVENT_INFO_STATUS_RX2_TIMEOUT );
 }
 

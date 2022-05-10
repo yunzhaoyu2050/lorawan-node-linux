@@ -255,7 +255,7 @@ static LmhpFragmentationParams_t FragmentationParams =
 };
 
 /*!
- * Indicates if LoRaMacProcess call is pending.
+ * Indicates if LoRaMacProcess call is pending. 指示 LoRaMacProcess 调用是否挂起。
  * 
  * \warning If variable is equal to 0 then the MCU can be set in low power mode
  */

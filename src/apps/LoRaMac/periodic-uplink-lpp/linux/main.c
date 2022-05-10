@@ -247,7 +247,7 @@ static LmhpComplianceParams_t LmhpComplianceParams =
 };
 
 /*!
- * Indicates if LoRaMacProcess call is pending.
+ * Indicates if LoRaMacProcess call is pending. 指示 LoRaMacProcess 调用是否挂起。
  * 
  * \warning If variable is equal to 0 then the MCU can be set in low power mode
  */
@@ -319,8 +319,8 @@ int main(int argc, char *argv[])
     memset(&SX126x, -1, sizeof(SX126x));
 
     // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!! test !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-    SX126x.BUSY = 76;
-    SX126x.DIO1 = 79;
+    SX126x.BUSY = 5;
+    SX126x.DIO1 = 4;
     // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!! test !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     
     SX126x.Spi = SX126xSpiOpen((char *)g_spi_device);

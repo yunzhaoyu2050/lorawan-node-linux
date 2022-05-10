@@ -2526,7 +2526,7 @@ typedef struct sLoRaMacCallback
     /*!
      *\brief    Will be called each time a Radio IRQ is handled by the MAC
      *          layer.
-     *
+     *  每次 MAC 层处理无线电 IRQ 时都会调用
      *\warning  Runs in a IRQ context. Should only change variables state.
      */
     void ( *MacProcessNotify )( void );
